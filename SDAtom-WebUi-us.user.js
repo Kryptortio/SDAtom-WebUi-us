@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.5
+// @version      0.5.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -46,6 +46,11 @@
             fpHeight: {sel:"#range_id_4",sel2:"#component-58 input"},
             denoise: {sel:"#range_id_5",sel2:"#component-59 input"},
 
+            extra: {sel:"#subseed_show_box input"},
+            varSeed: {sel:"#component-79 input"},
+            varStr: {sel:"#range_id_9",sel2:"#component-83 input"},
+            varRSFWidth: {sel:"#range_id_10",sel2:"#component-86 input"},
+            varRSFHeight: {sel:"#range_id_11",sel2:"#component-87 input"},
 
             batchCount: {sel:"#range_id_6",sel2:"#component-62 input"},
             batchSize: {sel:"#range_id_7",sel2:"#component-63 input"},
@@ -74,6 +79,12 @@
             restoreFace: {sel:"#component-221 input"},
             tiling: {sel:"#component-222 input"},
 
+            extra: {sel:"#subseed_show input"},
+            varSeed: {sel:"#component-245 input"},
+            varStr: {sel:"#range_id_22",sel2:"#component-249 input"},
+            varRSFWidth: {sel:"#range_id_23",sel2:"#component-252 input"},
+            varRSFHeight: {sel:"#range_id_24",sel2:"#component-253 input"},
+
             batchCount: {sel:"#range_id_18",sel2:"#component-225 input"},
             batchSize: {sel:"#range_id_19",sel2:"#component-226 input"},
 
@@ -100,6 +111,8 @@
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#component-89 select')) return;
         clearInterval(waitForLoadInterval);
         awqLog('Content loaded');
+
+        conf.shadowDOM.root.querySelector('.min-h-screen').style.cssText = 'min-height:unset !important;';
 
         function mapElementsToConf(p_object) {
             for (let prop in p_object) {
@@ -510,16 +523,20 @@
             } else if(prop == 'script') {
                 conf.t2i[prop].el.value = inputJSONObject[prop];
                 // Trigger event to update subsections
-                let evt = document.createEvent("HTMLEvents");
-                evt.initEvent("change", false, true);
-                conf.t2i[prop].el.dispatchEvent(evt);
+                triggerChange(conf.t2i[prop].el);
             } else if(conf.t2i[prop].el.type == 'checkbox') {
                 conf.t2i[prop].el.checked = inputJSONObject[prop];
+                if(prop == 'extra') triggerChange(conf.t2i[prop].el);
             } else {
                 conf.t2i[prop].el.value = inputJSONObject[prop];
             }
             if(conf.t2i[prop].el2) conf.t2i[prop].el2.value = inputJSONObject[prop];
 
         }
+    }
+    function triggerChange(p_elem) {
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("change", false, true);
+        p_elem.dispatchEvent(evt);
     }
 })();

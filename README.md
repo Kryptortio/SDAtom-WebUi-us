@@ -1,6 +1,6 @@
 # SDAtom-WebUi-us
 
-This is a [user script](https://en.wikipedia.org/wiki/Userscript) that adds a processing queue to the web ui of [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui). There is also an option to save one or more sets of settings for quickly loading them again later. It relies on the inteface not changing and it was built using the main branch from Dec 10, 2022 (should be easy to update if the interface changes).  
+This is a [user script](https://en.wikipedia.org/wiki/Userscript) that adds a processing queue to the web ui of [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui). There is also an option to save one or more sets of settings for quickly loading them again later. 
 
 ![alt text](https://github.com/Kryptortio/SDAtom-WebUi-us/blob/main/screenshot.png?raw=true)
 
@@ -24,3 +24,9 @@ The script assumes you are running the web interface on the url http://127.0.0.1
 * Click process queue to start running through the queue. You can keep adding to while it's working but when each item finishes current settings will be replaced with the ones in the queued item.
 
 The interface is added below the normal interface with one floating button in the top right. If you are confused about what any button or field is for hold the mouse over it for a description. Settings and the queue are saved in your browser if you clear browser data it will be removed. The queue can be edited directly while it's being processed (maybe just avoid changing it just as it's finishing an item).
+
+# Limitations
+
+* Only txt2img & img2img are supported
+* For img2img loading a new image is not supported
+* If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch Dec 10, 2022
