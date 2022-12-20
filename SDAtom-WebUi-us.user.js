@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.6.1
+// @version      0.6.2
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -70,6 +70,8 @@
             prompt: {sel:"#img2img_prompt textarea"},
             negPrompt: {sel:"#img2img_neg_prompt textarea"},
 
+            resizeMode: {sel:"#resize_mode"},
+
             sample: {sel:"#range_id_15",sel2:"#component-214 input"},
             sampleMethod: {sel:"#component-215"},
 
@@ -89,6 +91,8 @@
             batchSize: {sel:"#range_id_19",sel2:"#component-226 input"},
 
             cfg: {sel:"#range_id_20",se2:"#component-228 input"},
+
+            denoise: {sel:"#range_id_21",se2:"#component-230 input"},
 
             seed: {sel:"#component-235 input"},
             script: {sel:"#script_list select"},
@@ -520,7 +524,7 @@
         let valueJSON = {type:type};
         for (let prop in conf[type]) {
             if(prop !== 'controls') {
-                if(prop == 'sampleMethod') {
+                if(prop == 'sampleMethod' || prop ==  'resizeMode') {
                     valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
                 } else if(conf[type][prop].el.type == 'checkbox') {
                     valueJSON[prop] = conf[type][prop].el.checked;
@@ -538,7 +542,7 @@
         for (let prop in inputJSONObject) {
             if(prop == 'type') continue;
             awqLog('value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
-            if(prop == 'sampleMethod') {
+            if(prop == 'sampleMethod' || prop ==  'resizeMode') {
                 conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
                 triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
             } else if(prop == 'script') {
@@ -559,12 +563,14 @@
 
         }
     }
+
+
     function triggerChange(p_elem) {
         let evt = document.createEvent("HTMLEvents");
-        evt.initEvent("change", false, true);
+        evt.initEvent("change", false, true); // Needed for script to update subsection
         p_elem.dispatchEvent(evt);
         evt = document.createEvent("HTMLEvents");
-        evt.initEvent("input", false, true);
+        evt.initEvent("input", false, true); // Needded for webui to register changed settings
         p_elem.dispatchEvent(evt);
     }
 
