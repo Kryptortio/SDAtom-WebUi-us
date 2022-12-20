@@ -30,3 +30,4 @@ The interface is added below the normal interface with one floating button in th
 * Only txt2img & img2img are supported
 * For img2img loading a new image is not supported
 * If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch Dec 10, 2022
+* The script is not able to switch model (Stable Diffusion checkpoint)
