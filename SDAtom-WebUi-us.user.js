@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.6.2
+// @version      0.6.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -59,6 +59,17 @@
 
             seed: {sel:"#component-69 input"},
             script: {sel:"#component-89 select"},
+
+            scriptPromptMatrixPutVar: {sel:"#component-92 input"},
+            scriptPromptMatrixUseDiff: {sel:"#component-93 input"},
+
+            scriptXYXtype:{sel:"#component-101 #x_type select"},
+            scriptXYYtype:{sel:"#component-101 #y_type select"},
+            scriptXYXVals:{sel:"#component-104 textarea"},
+            scriptXYYVals:{sel:"#component-108 textarea"},
+            scriptXYDrawLeg:{sel:"#component-110 input"},
+            scriptXYIncludeSep:{sel:"#component-111 input"},
+            scriptXYKeepMOne:{sel:"#component-112 input"},
         },
         i2i:{
             controls:{
@@ -70,7 +81,7 @@
             prompt: {sel:"#img2img_prompt textarea"},
             negPrompt: {sel:"#img2img_neg_prompt textarea"},
 
-            resizeMode: {sel:"#resize_mode"},
+//            resizeMode: {sel:"#resize_mode"},
 
             sample: {sel:"#range_id_15",sel2:"#component-214 input"},
             sampleMethod: {sel:"#component-215"},
@@ -95,8 +106,54 @@
             denoise: {sel:"#range_id_21",se2:"#component-230 input"},
 
             seed: {sel:"#component-235 input"},
-            script: {sel:"#script_list select"},
+            script: {sel:"#tab_img2img #script_list select"},
 
+            scriptPromptMatrixPutVar: {sel:"#component-288 input"},
+            scriptPromptMatrixUseDiff: {sel:"#component-290 input"},
+
+            scriptXYXtype:{sel:"#component-304 #x_type select"},
+            scriptXYYtype:{sel:"#component-304 #y_type select"},
+            scriptXYXVals:{sel:"#component-307 textarea"},
+            scriptXYYVals:{sel:"#component-311 textarea"},
+            scriptXYDrawLeg:{sel:"#component-313 input"},
+            scriptXYIncludeSep:{sel:"#component-314 input"},
+            scriptXYKeepMOne:{sel:"#component-315 input"},
+
+            scripti2iAltTestOverrideSampM:{sel:"#component-259 input"},
+            scripti2iAltTestOverrideProm:{sel:"#component-260 input"},
+            scripti2iAltTestOrigProm:{sel:"#component-261 textarea"},
+            scripti2iAltTestOrigNProm:{sel:"#component-262 textarea"},
+            scripti2iAltTestOverrideSampS:{sel:"#component-263 input"},
+            scripti2iAltTestDecStep:{sel:"#component-264",sel2:"range_id_25"},
+            scripti2iAltTestOverrideDenoi:{sel:"#component-265 input"},
+            scripti2iAltTestDecCFG:{sel:"#component-266",sel2:"range_id_26"},
+            scripti2iAltTestRand:{sel:"#component-267",sel2:"range_id_27"},
+            scripti2iAltTestSigma:{sel:"#component-268 input"},
+
+            scriptLoopbackLoops:{sel:"#component-271 input",sel2:"range_id_28"},
+            scriptLoopbackDenoSCF:{sel:"#component-272 input",sel2:"range_id_29"},
+
+            scriptOutPMK2Pixels:{sel:"#component-276",sel2:"range_id_30"},
+            scriptOutPMK2MaskBlur:{sel:"#component-277",sel2:"range_id_31"},
+            scriptOutPMK2Left:{sel:"#component-278 label:nth-child(1) input"},
+            scriptOutPMK2Right:{sel:"#component-278 label:nth-child(2) input"},
+            scriptOutPMK2Up:{sel:"#component-278 label:nth-child(3) input"},
+            scriptOutPMK2Down:{sel:"#component-278 label:nth-child(4) input"},
+            scriptOutPMK2FallOff:{sel:"#component-279",sel2:"range_id_32"},
+            scriptOutPMK2Pixels:{sel:"#component-280",sel2:"range_id_33"},
+
+            scriptPoorManPixels:{sel:"#component-283 input",sel2:"range_id_34"},
+            scriptPoorManMaskBlur:{sel:"#component-284 input",sel2:"range_id_35"},
+            scriptPoorManMaskCont:{sel:"#component-285"},
+            scriptPoorManLeft:{sel:"#component-286 label:nth-child(1) input"},
+            scriptPoorManRight:{sel:"#component-286 label:nth-child(2) input"},
+            scriptPoorManUp:{sel:"#component-286 label:nth-child(3) input"},
+            scriptPoorManDown:{sel:"#component-286 label:nth-child(4) input"},
+
+            scriptSDUpTile:{sel:"#component-300 input",sel2:"range_id_36"},
+            scriptSDUpScale:{sel:"#component-301 input",sel2:"range_id_37"},
+            scriptSDUpUpcaler:{sel:"#component-302"},
+/**/
         },
         ui:{},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
@@ -523,12 +580,13 @@
         awqLog('getValueJSON type=' + type);
         let valueJSON = {type:type};
         for (let prop in conf[type]) {
+awqLog('getValueJSON prop=' + prop);
             if(prop !== 'controls') {
-                if(prop == 'sampleMethod' || prop ==  'resizeMode') {
+                if(conf[type][prop].el.type == 'fieldset') { // Radio buttons
                     valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
                 } else if(conf[type][prop].el.type == 'checkbox') {
                     valueJSON[prop] = conf[type][prop].el.checked;
-                } else  {
+                } else { // Inputs, Textarea
                     valueJSON[prop] = conf[type][prop].el.value;
                 }
             }
@@ -540,27 +598,29 @@
 		let type = inputJSONObject.type ? inputJSONObject.type : conf.info.activeType;
         awqLog('loadJson type=' + type);
         for (let prop in inputJSONObject) {
+            let triggerOnBaseElem = true;
             if(prop == 'type') continue;
-            awqLog('value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
-            if(prop == 'sampleMethod' || prop ==  'resizeMode') {
+            awqLog(prop + ' value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
+            if(conf[type][prop].el.type == 'fieldset') {
+                triggerOnBaseElem = false; // No need to trigger this on base element
                 conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
                 triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
-            } else if(prop == 'script') {
+            } else if(conf[type][prop].el.type == 'select-one') { // Select
+                if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Not needed
                 conf[type][prop].el.value = inputJSONObject[prop];
-                // Trigger event to update subsections
-                triggerChange(conf[type][prop].el);
             } else if(conf[type][prop].el.type == 'checkbox') {
+                if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Prevent checbox getting toggled
                 conf[type][prop].el.checked = inputJSONObject[prop];
-                triggerChange(conf[type][prop].el);
-            } else {
+            } else { // Input, Textarea
+                if(conf[type][prop].el.value == inputJSONObject[prop]) triggerOnBaseElem = false; // Fixes svelte error
                 conf[type][prop].el.value = inputJSONObject[prop];
-                triggerChange(conf[type][prop].el)
             }
             if(conf[type][prop].el2) {
+                let triggerForSel2 = conf[type][prop].sel2.value != inputJSONObject[prop];
                 conf[type][prop].el2.value = inputJSONObject[prop];
-                triggerChange(conf[type][prop].el2);
+                if(triggerForSel2) triggerChange(conf[type][prop].el2);
             }
-
+            if(triggerOnBaseElem) triggerChange(conf[type][prop].el);
         }
     }
 
