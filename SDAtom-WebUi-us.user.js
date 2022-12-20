@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.5.1
+// @version      0.5.2
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -344,7 +344,7 @@
         let undefinedInput = typeof p_set_processing == 'undefined';
 
         if(undefinedInput) {
-            toggleProcessButton(!conf.ui.processing);
+            toggleProcessButton(!conf.info.processing);
         } else if (p_set_processing) {
             conf.info.processing = true;
             pb.style.background = 'green';
