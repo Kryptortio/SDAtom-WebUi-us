@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.5.2
+// @version      0.5.3
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -14,8 +14,8 @@
     'use strict';
 
     // ----------------------------------------------------------------------------- Config
-    const awqDebug = false;
-    function awqLog(p_message) {if(awqDebug) console.log('AWQ:'+p_message);}
+    window.awqDebug = false;
+    function awqLog(p_message) {if(window.awqDebug) console.log('AWQ:'+p_message);}
     awqLog('Start');
     let conf = {
         shadowDOM:{sel:"gradio-app"},
@@ -277,7 +277,7 @@
         itemQuantity.title = "This is how many times this item should be executed";
         let itemJSON =document.createElement('input');
         itemJSON.classList = 'AWQ-item-JSON';
-        itemJSON.value = p_value || getValueJSON();
+        itemJSON.value = p_value || getValueJSON(p_type);
         itemJSON.style.width = "calc(100vw - 245px)";
         itemJSON.style.height = "18px";
         itemJSON.onchange = updateQueueState;
@@ -500,15 +500,17 @@
 
 
     function getValueJSON(p_type) {
-        let valueJSON = {type:p_type};
-        for (let prop in conf.t2i) {
+		let type = p_type || conf.info.activeType;
+        awqLog('getValueJSON type=' + type);
+        let valueJSON = {type:type};
+        for (let prop in conf[type]) {
             if(prop !== 'controls') {
                 if(prop == 'sampleMethod') {
-                    valueJSON[prop] = conf.t2i[prop].el.querySelector('input:checked').value;
-                } else if(conf.t2i[prop].el.type == 'checkbox') {
-                    valueJSON[prop] = conf.t2i[prop].el.checked;
+                    valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
+                } else if(conf[type][prop].el.type == 'checkbox') {
+                    valueJSON[prop] = conf[type][prop].el.checked;
                 } else  {
-                    valueJSON[prop] = conf.t2i[prop].el.value;
+                    valueJSON[prop] = conf[type][prop].el.value;
                 }
             }
         }
@@ -516,21 +518,24 @@
     }
     function loadJson(p_json) {
         let inputJSONObject = JSON.parse(p_json);
+		let type = inputJSONObject.type ? inputJSONObject.type : conf.info.activeType;
+        awqLog('loadJson type=' + type);
         for (let prop in inputJSONObject) {
-            awqLog('value='+conf.t2i[prop].el.value+ ' --->'+inputJSONObject[prop]);
+            if(prop == 'type') continue;
+            awqLog('value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
             if(prop == 'sampleMethod') {
-                conf.t2i[prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
+                conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
             } else if(prop == 'script') {
-                conf.t2i[prop].el.value = inputJSONObject[prop];
+                conf[type][prop].el.value = inputJSONObject[prop];
                 // Trigger event to update subsections
-                triggerChange(conf.t2i[prop].el);
-            } else if(conf.t2i[prop].el.type == 'checkbox') {
-                conf.t2i[prop].el.checked = inputJSONObject[prop];
-                if(prop == 'extra') triggerChange(conf.t2i[prop].el);
+                triggerChange(conf[type][prop].el);
+            } else if(conf[type][prop].el.type == 'checkbox') {
+                conf[type][prop].el.checked = inputJSONObject[prop];
+                if(prop == 'extra') triggerChange(conf[type][prop].el);
             } else {
-                conf.t2i[prop].el.value = inputJSONObject[prop];
+                conf[type][prop].el.value = inputJSONObject[prop];
             }
-            if(conf.t2i[prop].el2) conf.t2i[prop].el2.value = inputJSONObject[prop];
+            if(conf[type][prop].el2) conf[type][prop].el2.value = inputJSONObject[prop];
 
         }
     }
