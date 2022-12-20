@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.5.3
+// @version      0.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -525,23 +525,31 @@
             awqLog('value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
             if(prop == 'sampleMethod') {
                 conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
+                triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
             } else if(prop == 'script') {
                 conf[type][prop].el.value = inputJSONObject[prop];
                 // Trigger event to update subsections
                 triggerChange(conf[type][prop].el);
             } else if(conf[type][prop].el.type == 'checkbox') {
                 conf[type][prop].el.checked = inputJSONObject[prop];
-                if(prop == 'extra') triggerChange(conf[type][prop].el);
+                triggerChange(conf[type][prop].el);
             } else {
                 conf[type][prop].el.value = inputJSONObject[prop];
+                triggerChange(conf[type][prop].el)
             }
-            if(conf[type][prop].el2) conf[type][prop].el2.value = inputJSONObject[prop];
+            if(conf[type][prop].el2) {
+                conf[type][prop].el2.value = inputJSONObject[prop];
+                triggerChange(conf[type][prop].el2);
+            }
 
         }
     }
     function triggerChange(p_elem) {
         let evt = document.createEvent("HTMLEvents");
         evt.initEvent("change", false, true);
+        p_elem.dispatchEvent(evt);
+        evt = document.createEvent("HTMLEvents");
+        evt.initEvent("input", false, true);
         p_elem.dispatchEvent(evt);
     }
 })();
