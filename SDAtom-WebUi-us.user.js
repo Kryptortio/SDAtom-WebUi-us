@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.6.5
+// @version      0.6.9
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -16,6 +16,7 @@
     // ----------------------------------------------------------------------------- Config
     window.awqDebug = false;
     function awqLog(p_message) {if(window.awqDebug) console.log('AWQ:'+p_message);}
+    console.log('Running SDAtom-WebUi-us version ' + GM_info.script.version + ' with ' + GM_info.scriptHandler + ' and browser ' + window.navigator.userAgent);
     awqLog('Start');
     let conf = {
         shadowDOM:{sel:"gradio-app"},
@@ -270,6 +271,23 @@
         notificationSoundCheckbox.title = "PLay a poping sound when the queue is completed";
         container.appendChild(notificationSoundCheckbox);
 
+        let importExportButton = document.createElement('button');
+        importExportButton.innerHTML = "Import/export";
+        importExportButton.style.marginLeft = "5px";
+        importExportButton.style.height = c_uiElemntHeight;
+        importExportButton.style.cursor = "pointer";
+        importExportButton.title = "Import or export all the data for this script (to import add previoiusly exported data to the right, to export leave it empty). Importing data will reload the page!";
+        importExportButton.onclick = exportImport;
+        container.appendChild(importExportButton);
+        let importExportData = document.createElement('input');
+        importExportData.placeholder = 'Import/export data';
+        importExportData.style.height = c_uiElemntHeightSmall;
+        importExportData.style.width = '125px';
+        importExportData.style.marginRight = '10px';
+        importExportData.title = "Exported data will be show here, add data here to import it. Importing data will reload the page!";
+        container.appendChild(importExportData);
+
+        //exportImport
         let queueContainer = document.createElement('div');
         queueContainer.style.width = c_innerUIWidth;
         queueContainer.style.border = "1px solid white";
@@ -317,6 +335,9 @@
         conf.ui.settingsStorage = settingsStorage;
         conf.ui.defaultQueueQuantity = defaultQueueQuantity;
         conf.ui.rememberQueue = rememberQueue;
+        conf.ui.notificationSoundCheckbox = notificationSoundCheckbox;
+        conf.ui.importExportData = importExportData;
+
 
         refreshSettings();
 
@@ -573,14 +594,53 @@
         localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
         if(ss.value.length < 1) refreshSettings();
     }
+    function exportImport() {
+        let exportJSON = JSON.stringify({
+            savedSetting: conf.savedSetting,
+            currentQueue: conf.currentQueue,
+            awqNotificationSound: localStorage.awqNotificationSound,
+        });
+        let importJSON = conf.ui.importExportData.value;
 
+        if(importJSON.length < 1) {
+            conf.ui.importExportData.value = exportJSON;
+            conf.ui.importExportData.focus();
+            conf.ui.importExportData.select();
+            return;
+        }
+
+        if(!isJsonString(importJSON)) {
+            alert('Invalid input data');
+            awqLog('Invalid json vas entered');
+            return;
+        } else if(exportJSON == importJSON) {
+            awqLog('Data was not changed');
+        } else {
+            awqLog('Data has changed');
+            let parsedImportJSON = JSON.parse(importJSON);
+            conf.ui.notificationSoundCheckbox.checked = (parsedImportJSON.awqNotificationSound == 1 ? true : false);
+            conf.savedSetting = parsedImportJSON.savedSetting;
+            conf.currentQueue = parsedImportJSON.currentQueue;
+            localStorage.awqNotificationSound = parsedImportJSON.awqNotificationSound;
+            localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
+            localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
+            location.reload();
+        }
+    }
+    function isJsonString(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
 
     function getValueJSON(p_type) {
 		let type = p_type || conf.info.activeType;
         awqLog('getValueJSON type=' + type);
         let valueJSON = {type:type};
         for (let prop in conf[type]) {
-awqLog('getValueJSON prop=' + prop);
             if(prop !== 'controls') {
                 if(conf[type][prop].el.type == 'fieldset') { // Radio buttons
                     valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
