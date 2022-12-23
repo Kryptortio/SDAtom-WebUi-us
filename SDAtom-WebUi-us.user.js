@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.7.7
+// @version      0.7.8
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -627,7 +627,7 @@
 
         if(conf.info.previousTaskStartTime) {
             let timeSpent = Date.now() - conf.info.previousTaskStartTime;
-            awqLogPublishMsg(`Completed work on queue item after ${Math.round(timeSpent/1000/60)} minutes ${timeSpent/1000} seconds `);
+            awqLogPublishMsg(`Completed work on queue item after ${Math.floor(timeSpent/1000/60)} minutes ${Math.round((timeSpent-Math.floor(timeSpent/60000)*60000)/1000)} seconds `);
         }
 
         let queueItems = conf.ui.queueContainer.getElementsByTagName('div');
