@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.7.5
+// @version      0.7.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -526,6 +526,7 @@
         } else {
             awqLogPublishMsg('Processing <b>ended</b>');
             conf.info.processing = false;
+            conf.info.previousTaskStartTime = null;
             pb.style.background = 'buttonface';
             pb.innerHTML = c_processButtonText;
         }
@@ -584,6 +585,11 @@
         if(conf.info.working) return; // Already working on task
         if(!conf.info.processing) return; // Not proicessing queue
 
+        if(conf.info.previousTaskStartTime) {
+            let timeSpent = Date.now() - conf.info.previousTaskStartTime;
+            awqLogPublishMsg(`Completed work on queue item after ${Math.round(timeSpent/1000/60)} minutes ${timeSpent/1000} seconds `);
+        }
+
         let queueItems = conf.ui.queueContainer.getElementsByTagName('div');
         for(let i = 0; i < queueItems.length; i++) {
             let itemQuantity = queueItems[i].querySelector('.AWQ-item-quantity');
@@ -596,10 +602,12 @@
                     itemQuantity.value = itemQuantity.value - 1;
                     itemQuantity.onchange();
                     awqLogPublishMsg(`Started working on ${itemType} queue item ${i+1} (${itemQuantity.value} more to go) `);
+                    conf.info.previousTaskStartTime = Date.now();
                 });
                 return;
             }
         }
+        conf.info.previousTaskStartTime = null;
         awqLog('executeNewTask - No more tasks found');
         toggleProcessButton(false); // No more tasks to process
         if(localStorage.awqNotificationSound == 1) c_audio_base64.play();
