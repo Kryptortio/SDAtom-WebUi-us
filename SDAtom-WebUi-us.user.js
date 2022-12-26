@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.8
+// @version      0.8.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -496,12 +496,21 @@
         itemType.value = p_type || conf.info.activeType;
         itemType.title = "This is the type/tab for the queue item";
         let itemQuantity = document.createElement('input');
+        function updateItemQuantityBG() {
+            if(itemQuantity.value.length == 0) { itemQuantity.style.backgroundColor = 'red'; }
+            else if(itemQuantity.value < 1) { itemQuantity.style.backgroundColor = '#c2ffc2'; }
+            else if(itemQuantity.value > 0) { itemQuantity.style.backgroundColor = 'white'; }
+        }
         itemQuantity.classList = 'AWQ-item-quantity';
         itemQuantity.value = quantity;
         itemQuantity.style.width = "50px";
         itemQuantity.type = 'number';
         itemQuantity.style.height = c_uiElemntHeightSmall;
-        itemQuantity.onchange = updateQueueState;
+        itemQuantity.onchange = function() {
+            updateItemQuantityBG();
+            updateQueueState();
+        };
+        updateItemQuantityBG();
         itemQuantity.onfocus = function() {this.select();};
         itemQuantity.title = "This is how many times this item should be executed";
         let itemJSON =document.createElement('input');
