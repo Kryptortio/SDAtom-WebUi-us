@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.7.9
+// @version      0.8
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -19,6 +19,7 @@
         info: {
             t2iContainer:{sel:"#tab_txt2img"},
             i2iContainer:{sel:"#tab_img2img"},
+            extContainer:{sel:"#tab_extras"},
         },
         t2i: {
             controls:{
@@ -150,6 +151,37 @@
             scriptSDUpTile:{sel:"#component-300 input",sel2:"#range_id_36"},
             scriptSDUpScale:{sel:"#component-301 input",sel2:"#range_id_37"},
             scriptSDUpUpcaler:{sel:"#component-302"},
+
+        },
+        ext:{
+            controls:{
+                tabButton: {sel:"#component-723 > div.tabs > div button:nth-child(3)"},
+                genrateButton: {sel:"#extras_generate"},
+                loadingElement:{sel:"#component-391 .wrap"},// getComputedStyle(document.querySelector("gradio-app").shadowRoot.querySelector('.wrap .z-20'), ':before').getPropertyValue('content')
+                extrasResizeMode:{
+                    scaleByButtonSel:"#extras_resize_mode button:nth-child(1)",
+                    scaleByContainerSel:"#extras_resize_mode #component-354",
+                    scaleToButtonSel:"#extras_resize_mode button:nth-child(2)",
+                    scaleToContainerSel:"#extras_resize_mode #component-357",
+                },
+            },
+
+
+            scaleByResize:{sel:"#component-355 input",sel2:"#range_id_38"},
+
+            scaleToWidth:{sel:"#component-360 input"},
+            scaleToHeight:{sel:"#component-361 input"},
+            scaleToCropToFit:{sel:"#component-363 input"},
+
+
+            upscaler1:{sel:"#extras_upscaler_1"},
+            upscaler2:{sel:"#extras_upscaler_2"},
+            upscale2Vis:{sel:"#component-370 input",sel2:"#range_id_39"},
+            GFPGANVis:{sel:"#component-373 input",sel2:"#range_id_40"},
+            CodeFormVis:{sel:"#component-376 input",sel2:"#range_id_41"},
+            CodeFormWeight:{sel:"#component-377 input",sel2:"#range_id_42"},
+            UpsBeforeFace:{sel:"#component-380 input"},
+
         },
         ui:{},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
@@ -218,7 +250,9 @@
         mapElementsToConf(conf.t2i, 't2i object');
         mapElementsToConf(conf.t2i.controls, 't2i control');
         mapElementsToConf(conf.i2i, 'i2i object');
-        mapElementsToConf(conf.i2i.controls, 't2i control');
+        mapElementsToConf(conf.i2i.controls, 'i2i control');
+        mapElementsToConf(conf.ext, 'ext object');
+        mapElementsToConf(conf.ext.controls, 'ext control');
 
         setInterval(updateStatus, 100);
 
@@ -595,21 +629,27 @@
         }
     }
 
+    let stuckProcessingCounter = 0;
     function updateStatus() {
         let previousType = conf.info.activeType;
         let previousWorking = conf.info.working;
         let workingOnI2I = conf.i2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnT2I = conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
+        let workingOnExt = conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
+        //getComputedStyle(conf.ext.controls.loadingElement.sel, ':before').getPropertyValue('content').match()  .z-20
+        // conf.shadowDOM.root.querySelectorAll(conf.ext.controls.loadingElement.sel).length > 0
 
 		if(conf.info.i2iContainer.el.style.display !== 'none') {
 			conf.info.activeType = 'i2i';
 		} else if(conf.info.t2iContainer.el.style.display !== 'none') {
 			conf.info.activeType = 't2i';
+		} else if(conf.info.extContainer.el.style.display !== 'none') {
+			conf.info.activeType = 'ext';
 		} else {
 			conf.info.activeType = 'other';
 		}
 
-        conf.info.working = workingOnI2I || workingOnT2I;
+        conf.info.working = workingOnI2I || workingOnT2I || workingOnExt;
 
         let typeChanged = conf.info.activeType !== previousType ? true : false;
         let workingChanged = conf.info.working !== previousWorking ? true : false;
@@ -619,6 +659,14 @@
 
         // Time to execute a new taks?
         if(workingChanged) executeNewTask();
+
+        // If no work is being done for a while disable queue
+        stuckProcessingCounter = !workingChanged && !conf.info.working && conf.info.processing ? stuckProcessingCounter + 1 : 0;
+        if(stuckProcessingCounter > 30) {
+            toggleProcessButton(false);
+            stuckProcessingCounter = 0;
+            playWorkCompleteSound();
+        }
     }
     function executeNewTask() {
         awqLog('executeNewTask working='+conf.info.working + ' processing=' + conf.info.processing);
@@ -643,15 +691,17 @@
                     itemQuantity.onchange();
                     awqLogPublishMsg(`Started working on ${itemType} queue item ${i+1} (${itemQuantity.value} more to go) `);
                     conf.info.previousTaskStartTime = Date.now();
-                });
+                }, true /*forceWait = true to always wait a little so loadjson works for extra tab switch */);
                 return;
             }
         }
         conf.info.previousTaskStartTime = null;
         awqLog('executeNewTask - No more tasks found');
         toggleProcessButton(false); // No more tasks to process
-        if(localStorage.awqNotificationSound == 1) c_audio_base64.play();
+        playWorkCompleteSound();
     }
+
+    function playWorkCompleteSound() { if(localStorage.awqNotificationSound == 1) c_audio_base64.play();}
 
     function saveSettings() {
         if(conf.ui.settingName.value.length < 1) {alert('Missing name'); return;}
@@ -694,8 +744,8 @@
         });
     }
 
-    function switchTabAndWait(p_type, p_callback) {
-        if(p_type == conf.info.activeType) {
+    function switchTabAndWait(p_type, p_callback, forceWait) {
+        if(p_type == conf.info.activeType && !forceWait) {
             p_callback();
         } else {
             let startingTab = conf.info.activeType;
@@ -791,15 +841,21 @@
                 }
             }
         }
+        if(type == 'ext') { // Needs special saving since it's not an input but a tab switch
+            let scaleByVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByContainerSel).style.display == 'none' ? false : true;
+            //let scaleToVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToContainerSel).style.display == 'none' ? false : true;
+            valueJSON.extrasResizeMode = scaleByVisble ? 1 : 2;
+        }
         return JSON.stringify(valueJSON);
     }
-    function loadJson(p_json) {
+    async function loadJson(p_json) {
         let inputJSONObject = JSON.parse(p_json);
 		let type = inputJSONObject.type ? inputJSONObject.type : conf.info.activeType;
+        let waitForThisContainer;
         awqLog('loadJson type=' + type);
         for (let prop in inputJSONObject) {
             let triggerOnBaseElem = true;
-            if(prop == 'type') continue;
+            if(['type','extrasResizeMode'].includes(prop)) continue;
             try {
                 awqLog(prop + ' value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
                 if(conf[type][prop].el.type == 'fieldset') {
@@ -824,6 +880,14 @@
                 if(triggerOnBaseElem) triggerChange(conf[type][prop].el);
             } catch(e) {
                 awqLogPublishError(`Failed to load settings for ${type} item ${prop} with error ${e.message}: <pre style="margin: 0;">${e.stack}</pre>`);
+            }
+        }
+        if(inputJSONObject.extrasResizeMode) { // Needs special loading since it's not an input but a tab switch
+            let targetButton,targetContainer;
+            if(inputJSONObject.extrasResizeMode == 1) {
+                conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByButtonSel).click();
+            } else if(inputJSONObject.extrasResizeMode == 2) {
+                conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToButtonSel).click();
             }
         }
     }
