@@ -43,9 +43,9 @@
             width:  {sel:"#range_id_1",sel2:"#component-50 input"},
             height: {sel:"#range_id_2",sel2:"#component-51 input"},
 
-            restoreFace: {sel:"#component-53 input"},
-            tiling: {sel:"#component-54 input"},
-            highresFix: {sel:"#component-55 input"},
+            restoreFace: {sel:"#component-54 input"},
+            tiling: {sel:"#component-55 input"},
+            highresFix: {sel:"#component-56 input"},
             fpWidth: {sel:"#range_id_3",sel2:"#component-59 input"},
             fpHeight: {sel:"#range_id_4",sel2:"#component-60 input"},
             denoise: {sel:"#range_id_5",sel2:"#component-61 input"},
