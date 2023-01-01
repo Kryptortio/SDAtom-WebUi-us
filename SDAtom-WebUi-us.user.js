@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.8.6
+// @version      0.8.7
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -29,7 +29,7 @@
         },
         t2i: {
             controls:{
-                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(1)"},
+                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(1)"},
                 genrateButton: {sel:"#txt2img_generate"},
                 skipButton: {sel:"#txt2img_skip"},
             },
@@ -77,7 +77,7 @@
         },
         i2i:{
             controls:{
-                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(2)"},
+                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(2)"},
                 genrateButton: {sel:"#img2img_generate"},
                 skipButton: {sel:"#img2img_skip"},
             },
@@ -161,7 +161,7 @@
         },
         ext:{
             controls:{
-                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(3)"},
+                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(3)"},
                 genrateButton: {sel:"#extras_generate"},
                 loadingElement:{sel:"#component-391 .wrap"},
                 extrasResizeMode:{
