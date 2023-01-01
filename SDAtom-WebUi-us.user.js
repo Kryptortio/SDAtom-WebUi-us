@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.8.5
+// @version      0.8.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -29,7 +29,7 @@
         },
         t2i: {
             controls:{
-                tabButton: {sel:"#component-723 > div.tabs > div button:nth-child(1)"},
+                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(1)"},
                 genrateButton: {sel:"#txt2img_generate"},
                 skipButton: {sel:"#txt2img_skip"},
             },
@@ -37,47 +37,47 @@
             prompt: {sel:"#txt2img_prompt textarea"},
             negPrompt: {sel:"#txt2img_neg_prompt textarea"},
 
-            sample: {sel:"#range_id_0",sel2:"#component-45 input"},
-            sampleMethod: {sel:"#txt2img_sampling"},
+            sample: {sel:"#range_id_0",sel2:"#txt2img_steps input"},
+            sampleMethod: {sel:"#txt2img_sampling select"},
 
-            width:  {sel:"#range_id_1",sel2:"#component-48 input"},
-            height: {sel:"#range_id_2",sel2:"#component-49 input"},
+            width:  {sel:"#range_id_1",sel2:"#component-50 input"},
+            height: {sel:"#range_id_2",sel2:"#component-51 input"},
 
-            restoreFace: {sel:"#component-52 input"},
-            tiling: {sel:"#component-53 input"},
-            highresFix: {sel:"#component-54 input"},
-            fpWidth: {sel:"#range_id_3",sel2:"#component-57 input"},
-            fpHeight: {sel:"#range_id_4",sel2:"#component-58 input"},
-            denoise: {sel:"#range_id_5",sel2:"#component-59 input"},
+            restoreFace: {sel:"#component-53 input"},
+            tiling: {sel:"#component-54 input"},
+            highresFix: {sel:"#component-55 input"},
+            fpWidth: {sel:"#range_id_3",sel2:"#component-59 input"},
+            fpHeight: {sel:"#range_id_4",sel2:"#component-60 input"},
+            denoise: {sel:"#range_id_5",sel2:"#component-61 input"},
 
             extra: {sel:"#subseed_show_box input"},
-            varSeed: {sel:"#component-79 input"},
-            varStr: {sel:"#range_id_9",sel2:"#component-83 input"},
-            varRSFWidth: {sel:"#range_id_10",sel2:"#component-86 input"},
-            varRSFHeight: {sel:"#range_id_11",sel2:"#component-87 input"},
+            varSeed: {sel:"#component-81 input"},
+            varStr: {sel:"#range_id_9",sel2:"#component-85 input"},
+            varRSFWidth: {sel:"#range_id_10",sel2:"#component-88 input"},
+            varRSFHeight: {sel:"#range_id_11",sel2:"#component-89 input"},
 
-            batchCount: {sel:"#range_id_6",sel2:"#component-62 input"},
-            batchSize: {sel:"#range_id_7",sel2:"#component-63 input"},
+            batchCount: {sel:"#range_id_6",sel2:"#component-64 input"},
+            batchSize: {sel:"#range_id_7",sel2:"#component-65 input"},
 
-            cfg: {sel:"#range_id_8",se2:"#component-65 input"},
+            cfg: {sel:"#range_id_8",se2:"#component-67 input"},
 
-            seed: {sel:"#component-69 input"},
-            script: {sel:"#component-89 select"},
+            seed: {sel:"#component-71 input"},
+            script: {sel:"#component-91 select"},
 
-            scriptPromptMatrixPutVar: {sel:"#component-92 input"},
-            scriptPromptMatrixUseDiff: {sel:"#component-93 input"},
+            scriptPromptMatrixPutVar: {sel:"#component-95 input"},
+            scriptPromptMatrixUseDiff: {sel:"#component-95 input"},
 
-            scriptXYXtype:{sel:"#component-101 #x_type select"},
-            scriptXYYtype:{sel:"#component-101 #y_type select"},
-            scriptXYXVals:{sel:"#component-104 textarea"},
-            scriptXYYVals:{sel:"#component-108 textarea"},
-            scriptXYDrawLeg:{sel:"#component-110 input"},
-            scriptXYIncludeSep:{sel:"#component-111 input"},
-            scriptXYKeepMOne:{sel:"#component-112 input"},
+            scriptXYXtype:{sel:"#component-104 #x_type select"},
+            scriptXYYtype:{sel:"#component-108 #y_type select"},
+            scriptXYXVals:{sel:"#component-106 textarea"},
+            scriptXYYVals:{sel:"#component-110 textarea"},
+            scriptXYDrawLeg:{sel:"#component-112 input"},
+            scriptXYIncludeSep:{sel:"#component-113 input"},
+            scriptXYKeepMOne:{sel:"#component-114 input"},
         },
         i2i:{
             controls:{
-                tabButton: {sel:"#component-723 > div.tabs > div button:nth-child(2)"},
+                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(2)"},
                 genrateButton: {sel:"#img2img_generate"},
                 skipButton: {sel:"#img2img_skip"},
             },
@@ -87,81 +87,81 @@
 
             resizeMode: {sel:"#resize_mode"},
 
-            sample: {sel:"#range_id_15",sel2:"#component-214 input"},
-            sampleMethod: {sel:"#component-215"},
+            sample: {sel:"#range_id_15",sel2:"#img2img_steps input"},
+            sampleMethod: {sel:"#img2img_sampling select"},
 
             width:  {sel:"#range_id_16",sel2:"#img2img_width input"},
             height: {sel:"#range_id_17",sel2:"#img2img_height input"},
 
-            restoreFace: {sel:"#component-221 input"},
-            tiling: {sel:"#component-222 input"},
+            restoreFace: {sel:"#component-223 input"},
+            tiling: {sel:"#component-224 input"},
 
             extra: {sel:"#subseed_show input"},
-            varSeed: {sel:"#component-245 input"},
-            varStr: {sel:"#range_id_22",sel2:"#component-249 input"},
-            varRSFWidth: {sel:"#range_id_23",sel2:"#component-252 input"},
-            varRSFHeight: {sel:"#range_id_24",sel2:"#component-253 input"},
+            varSeed: {sel:"#component-247 input"},
+            varStr: {sel:"#range_id_22",sel2:"#component-251 input"},
+            varRSFWidth: {sel:"#range_id_23",sel2:"#component-254 input"},
+            varRSFHeight: {sel:"#range_id_24",sel2:"#component-255 input"},
 
-            batchCount: {sel:"#range_id_18",sel2:"#component-225 input"},
-            batchSize: {sel:"#range_id_19",sel2:"#component-226 input"},
+            batchCount: {sel:"#range_id_18",sel2:"#component-227 input"},
+            batchSize: {sel:"#range_id_19",sel2:"#component-228 input"},
 
-            cfg: {sel:"#range_id_20",se2:"#component-228 input"},
+            cfg: {sel:"#range_id_20",se2:"#component-231 input"},
 
-            denoise: {sel:"#range_id_21",se2:"#component-230 input"},
+            denoise: {sel:"#range_id_21",se2:"#component-232 input"},
 
-            seed: {sel:"#component-235 input"},
+            seed: {sel:"#component-237 input"},
             script: {sel:"#tab_img2img #script_list select"},
 
-            scriptPromptMatrixPutVar: {sel:"#component-288 input"},
-            scriptPromptMatrixUseDiff: {sel:"#component-290 input"},
+            scriptPromptMatrixPutVar: {sel:"#component-291 input"},
+            scriptPromptMatrixUseDiff: {sel:"#component-292 input"},
 
-            scriptXYXtype:{sel:"#component-304 #x_type select"},
-            scriptXYYtype:{sel:"#component-304 #y_type select"},
-            scriptXYXVals:{sel:"#component-307 textarea"},
-            scriptXYYVals:{sel:"#component-311 textarea"},
-            scriptXYDrawLeg:{sel:"#component-313 input"},
-            scriptXYIncludeSep:{sel:"#component-314 input"},
-            scriptXYKeepMOne:{sel:"#component-315 input"},
+            scriptXYXtype:{sel:"#x_type select"},
+            scriptXYYtype:{sel:"#y_type select"},
+            scriptXYXVals:{sel:"#component-309 textarea"},
+            scriptXYYVals:{sel:"#component-313 textarea"},
+            scriptXYDrawLeg:{sel:"#component-315 input"},
+            scriptXYIncludeSep:{sel:"#component-316 input"},
+            scriptXYKeepMOne:{sel:"#component-317 input"},
 
-            scripti2iAltTestOverrideSampM:{sel:"#component-259 input"},
-            scripti2iAltTestOverrideProm:{sel:"#component-260 input"},
-            scripti2iAltTestOrigProm:{sel:"#component-261 textarea"},
-            scripti2iAltTestOrigNProm:{sel:"#component-262 textarea"},
-            scripti2iAltTestOverrideSampS:{sel:"#component-263 input"},
-            scripti2iAltTestDecStep:{sel:"#component-264",sel2:"#range_id_25"},
-            scripti2iAltTestOverrideDenoi:{sel:"#component-265 input"},
-            scripti2iAltTestDecCFG:{sel:"#component-266",sel2:"#range_id_26"},
-            scripti2iAltTestRand:{sel:"#component-267",sel2:"#range_id_27"},
-            scripti2iAltTestSigma:{sel:"#component-268 input"},
+            scripti2iAltTestOverrideSampM:{sel:"#component-261 input"},
+            scripti2iAltTestOverrideProm:{sel:"#component-262 input"},
+            scripti2iAltTestOrigProm:{sel:"#component-263 textarea"},
+            scripti2iAltTestOrigNProm:{sel:"#component-264 textarea"},
+            scripti2iAltTestOverrideSampS:{sel:"#component-265 input"},
+            scripti2iAltTestDecStep:{sel:"#component-266",sel2:"#range_id_25"},
+            scripti2iAltTestOverrideDenoi:{sel:"#component-267 input"},
+            scripti2iAltTestDecCFG:{sel:"#component-268",sel2:"#range_id_26"},
+            scripti2iAltTestRand:{sel:"#component-269",sel2:"#range_id_27"},
+            scripti2iAltTestSigma:{sel:"#component-270 input"},
 
-            scriptLoopbackLoops:{sel:"#component-271 input",sel2:"#range_id_28"},
-            scriptLoopbackDenoSCF:{sel:"#component-272 input",sel2:"#range_id_29"},
+            scriptLoopbackLoops:{sel:"#component-273 input",sel2:"#range_id_28"},
+            scriptLoopbackDenoSCF:{sel:"#component-274 input",sel2:"#range_id_29"},
 
-            scriptOutPMK2Pixels:{sel:"#component-276",sel2:"#range_id_30"},
-            scriptOutPMK2MaskBlur:{sel:"#component-277",sel2:"#range_id_31"},
-            scriptOutPMK2Left:{sel:"#component-278 label:nth-child(1) input"},
-            scriptOutPMK2Right:{sel:"#component-278 label:nth-child(2) input"},
-            scriptOutPMK2Up:{sel:"#component-278 label:nth-child(3) input"},
-            scriptOutPMK2Down:{sel:"#component-278 label:nth-child(4) input"},
-            scriptOutPMK2FallOff:{sel:"#component-279",sel2:"#range_id_32"},
-            scriptOutPMK2Pixels:{sel:"#component-280",sel2:"#range_id_33"},
+            scriptOutPMK2Pixels:{sel:"#component-278",sel2:"#range_id_30"},
+            scriptOutPMK2MaskBlur:{sel:"#component-279",sel2:"#range_id_31"},
+            scriptOutPMK2Left:{sel:"#component-280 label:nth-child(1) input"},
+            scriptOutPMK2Right:{sel:"#component-280 label:nth-child(2) input"},
+            scriptOutPMK2Up:{sel:"#component-280 label:nth-child(3) input"},
+            scriptOutPMK2Down:{sel:"#component-280 label:nth-child(4) input"},
+            scriptOutPMK2FallOff:{sel:"#component-281",sel2:"#range_id_32"},
+            scriptOutPMK2Pixels:{sel:"#component-282",sel2:"#range_id_33"},
 
-            scriptPoorManPixels:{sel:"#component-283 input",sel2:"#range_id_34"},
-            scriptPoorManMaskBlur:{sel:"#component-284 input",sel2:"#range_id_35"},
-            scriptPoorManMaskCont:{sel:"#component-285"},
-            scriptPoorManLeft:{sel:"#component-286 label:nth-child(1) input"},
-            scriptPoorManRight:{sel:"#component-286 label:nth-child(2) input"},
-            scriptPoorManUp:{sel:"#component-286 label:nth-child(3) input"},
-            scriptPoorManDown:{sel:"#component-286 label:nth-child(4) input"},
+            scriptPoorManPixels:{sel:"#component-285 input",sel2:"#range_id_34"},
+            scriptPoorManMaskBlur:{sel:"#component-286 input",sel2:"#range_id_35"},
+            scriptPoorManMaskCont:{sel:"#component-287"},
+            scriptPoorManLeft:{sel:"#component-288 label:nth-child(1) input"},
+            scriptPoorManRight:{sel:"#component-288 label:nth-child(2) input"},
+            scriptPoorManUp:{sel:"#component-288 label:nth-child(3) input"},
+            scriptPoorManDown:{sel:"#component-288 label:nth-child(4) input"},
 
-            scriptSDUpTile:{sel:"#component-300 input",sel2:"#range_id_36"},
-            scriptSDUpScale:{sel:"#component-301 input",sel2:"#range_id_37"},
-            scriptSDUpUpcaler:{sel:"#component-302"},
+            scriptSDUpTile:{sel:"#component-302 input",sel2:"#range_id_36"},
+            scriptSDUpScale:{sel:"#component-303 input",sel2:"#range_id_37"},
+            scriptSDUpUpcaler:{sel:"#component-304"},
 
         },
         ext:{
             controls:{
-                tabButton: {sel:"#component-723 > div.tabs > div button:nth-child(3)"},
+                tabButton: {sel:"#component-729 > div.tabs > div button:nth-child(3)"},
                 genrateButton: {sel:"#extras_generate"},
                 loadingElement:{sel:"#component-391 .wrap"},
                 extrasResizeMode:{
@@ -233,7 +233,7 @@
     let waitForLoadInterval = setInterval(initAWQ, 500);
     function initAWQ() {
         conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel).shadowRoot;
-        if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#component-89 select')) return;
+        if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
         clearInterval(waitForLoadInterval);
         awqLog('Content loaded');
 
@@ -316,6 +316,7 @@
         clearButton.style.cursor = "pointer";
         clearButton.title = "Empty the queue completely";
         clearButton.onclick = function() {
+            if(!confirm('Are you sure you want to remove everything in your queue?')) return;
             queueContainer.innerHTML = c_emptyQueueString;
             let oldQueueLength = conf.currentQueue.length;
             conf.currentQueue = [];
