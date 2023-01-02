@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.8.8
+// @version      0.8.9
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -197,6 +197,7 @@
         notificationSound: (localStorage.awqNotificationSound == 1 ? true : false),
         maxOutputLines: localStorage.awqMaxOutputLines || 500,
         autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true),
+        verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_processButtonText = 'Process queue';
@@ -210,9 +211,13 @@
     const c_extraResizeModeScaleToType = 2;
 
     // ----------------------------------------------------------------------------- Logging
-    window.awqDebug = false;
-    function awqLog(p_message) { if(window.awqDebug) console.log('AWQ:'+p_message); }
-    function awqLogPublishMsg(p_message, p_error) {
+    console.log(`Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`);
+    function awqLog(p_message) {
+        if(conf.verboseLog) {
+            awqLogPublishMsg(p_message, 'lightgray');
+        }
+    }
+    function awqLogPublishMsg(p_message, p_color) {
         if(!conf.ui.outputConsole) return;
         if(conf.ui.outputConsole.innerHTML.match('console-description')) {
             conf.ui.outputConsole.innerHTML = `* Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`;
@@ -220,24 +225,34 @@
         let lines = conf.ui.outputConsole.querySelectorAll('div');
         let line = document.createElement('div');
         const timestamp = (new Date()).toLocaleTimeString([], {hour: '2-digit',minute: '2-digit',second: '2-digit', hour12: false});
-        line.innerHTML = '<span style="' + (p_error ? 'color:red' : '') + '">' + timestamp + ': ' + p_message + '</span>';
+        line.innerHTML = '<span style="' + (p_color ? 'color:'+p_color : '') + '">' + timestamp + ': ' + p_message + '</span>';
         conf.ui.outputConsole.appendChild(line);
 
         if(lines.length >= conf.maxOutputLines) {
             lines[0].parentNode.removeChild(lines[0]);
         }
         if(conf.autoscrollOutput) conf.ui.outputConsole.scrollTo(0, conf.ui.outputConsole.scrollHeight);
-        awqLog(p_message);
     }
-    function awqLogPublishError(p_message, p_error) { awqLogPublishMsg(p_message, true) }
-    console.log(`Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`);
+    function awqLogPublishError(p_message) { awqLogPublishMsg(p_message, 'red') }
+    window.addEventListener("error", (event) => {
+        if(conf.verboseLog) {
+            awqLogPublishMsg(
+                `Javascript error (can be caused by something other than this script): ${event.message} source:${event.filename} line:${event.lineno} col:${event.colno} Error:${event.error ? JSON.stringify(event.error) : '' }`,
+                'darkorange'
+            );
+        }
+    });
+    let oldWarn = window.console.warn,oldInfo = window.console.info,oldlog = window.console.log;
+    window.console.warn = function(p_msg) {awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldWarn(p_msg);}
+    window.console.info = function(p_msg) {awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldInfo(p_msg);}
+    window.console.log = function(p_msg) {awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldlog(p_msg);}
     // ----------------------------------------------------------------------------- Wait for content to load
     let waitForLoadInterval = setInterval(initAWQ, 500);
     function initAWQ() {
         conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel).shadowRoot;
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
         clearInterval(waitForLoadInterval);
-        awqLog('Content loaded');
+        awqLog('initAWQ: Content loaded');
 
         generateMainUI();
 
@@ -468,7 +483,21 @@
         outputConsoleClearButton.style.marginLeft = "10px";
         outputConsoleClearButton.title = "Clear the console above";
         container.appendChild(outputConsoleClearButton);
-
+        let verboseOutputConsoleLabel = document.createElement('label');
+        verboseOutputConsoleLabel.innerHTML = 'Verbose';
+        verboseOutputConsoleLabel.style.color = "white";
+        verboseOutputConsoleLabel.style.marginLeft = "10px";
+        verboseOutputConsoleLabel.title = "Log as much as possible (for troubleshooting)";
+        container.appendChild(verboseOutputConsoleLabel);
+        let verboseOutputConsole = document.createElement('input');
+        verboseOutputConsole.type = "checkbox";
+        verboseOutputConsole.onclick = function() {localStorage.awqVerboseLog = localStorage.awqVerboseLog == 1 ? 0 : 1;};
+        verboseOutputConsole.checked = (localStorage.awqVerboseLog == 1 ? true : false);
+        verboseOutputConsole.style.cursor = "pointer";
+        verboseOutputConsole.title = "Log as much as possible (for troubleshooting)";
+        verboseOutputConsole.onclick = function() {localStorage.awqVerboseLog = this.checked ? 1 : 0; conf.verboseLog = this.checked};
+        verboseOutputConsole.checked = conf.verboseLog;
+        container.appendChild(verboseOutputConsole);
 
         conf.ui.queueContainer = queueContainer;
         conf.ui.clearButton = clearButton;
@@ -491,10 +520,11 @@
             }
             updateQueueState();
         }
+        awqLog('generateMainUI: Completed');
     }
 
     function appendQueueItem(p_quantity, p_value, p_type) {
-        awqLog('appendQueueItem '+(isNaN(p_quantity) ? 'current' : 'predef-'+p_quantity ));
+        awqLog('appendQueueItem: quantity:' + p_quantity + ' type:' + p_type);
         let quantity = isNaN(p_quantity) ? (conf.ui.defaultQueueQuantity.value > 0 ? conf.ui.defaultQueueQuantity.value : 1) : p_quantity;
 
         let queueItem = document.createElement('div');
@@ -601,7 +631,7 @@
     }
 
     function toggleProcessButton(p_set_processing) {
-        awqLog('toggleProcessButton input:' + p_set_processing);
+        awqLog('toggleProcessButton:' + p_set_processing);
         let pb = conf.ui.processButton;
         let undefinedInput = typeof p_set_processing == 'undefined';
 
@@ -619,7 +649,6 @@
 
             cogElem.animate([{ transform: 'rotate(0)' },{transform: 'rotate(360deg)'}], {duration: 1000,iterations: Infinity});
 
-            awqLog('Processing activated');
             executeNewTask();
         } else {
             awqLogPublishMsg('Processing <b>ended</b>');
@@ -632,7 +661,7 @@
 
     function updateQueueState() {
         let queueItems = conf.ui.queueContainer.getElementsByTagName('div');
-        awqLog('updateQueueState old length:'+conf.currentQueue.length + ' new length:'+queueItems.length);
+        awqLog('updateQueueState: old length:'+conf.currentQueue.length + ' new length:'+queueItems.length);
 
         let newArray = [];
         for(let i = 0; i < queueItems.length; i++) {
@@ -645,10 +674,10 @@
         }
         conf.currentQueue = newArray;
         if(conf.ui.rememberQueue.checked) {
-            awqLog('Saving current queue state:'+conf.currentQueue.length);
+            awqLog('updateQueueState: Saving current queue state '+conf.currentQueue.length);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
         } else {
-            awqLog('Cleared current queue state');
+            awqLog('updateQueueState: Cleared current queue state');
             localStorage.removeItem("awqCurrentQueue");
         }
     }
@@ -676,8 +705,8 @@
         let typeChanged = conf.commonData.activeType !== previousType ? true : false;
         let workingChanged = conf.commonData.working !== previousWorking ? true : false;
 
-        if(typeChanged) awqLog('active type changed to:' + conf.commonData.activeType);
-        if(workingChanged) awqLog('Work status changed to:' + conf.commonData.working);
+        if(typeChanged) awqLog('updateStatus: active type changed to:' + conf.commonData.activeType);
+        if(workingChanged) awqLog('updateStatus: Work status changed to:' + conf.commonData.working);
 
         // Time to execute a new taks?
         if(workingChanged) executeNewTask();
@@ -685,14 +714,14 @@
         // If no work is being done for a while disable queue
         stuckProcessingCounter = !conf.commonData.waiting && !workingChanged && !conf.commonData.working && conf.commonData.processing ? stuckProcessingCounter + 1 : 0;
         if(stuckProcessingCounter > 30) {
-            awqLog('updateStatus stuck in processing queue status? Disabling queue processing');
+            awqLog('updateStatus: stuck in processing queue status? Disabling queue processing');
             toggleProcessButton(false);
             stuckProcessingCounter = 0;
             playWorkCompleteSound();
         }
     }
     async function executeNewTask() {
-        awqLog('executeNewTask working='+conf.commonData.working + ' processing=' + conf.commonData.processing);
+        awqLog('executeNewTask: working='+conf.commonData.working + ' processing=' + conf.commonData.processing);
         if(conf.commonData.working) return; // Already working on task
         if(!conf.commonData.processing) return; // Not proicessing queue
 
@@ -706,7 +735,7 @@
             let itemQuantity = queueItems[i].querySelector('.AWQ-item-quantity');
             let itemType = queueItems[i].querySelector('.AWQ-item-type').value;
             if(itemQuantity.value > 0) {
-                awqLog('Found next work item with index ' + i + ', quantity ' + itemQuantity.value + ' and type ' + itemType);
+                awqLog('executeNewTask: found next work item with index ' + i + ', quantity ' + itemQuantity.value + ' and type ' + itemType);
                 await loadJson(queueItems[i].querySelector('.AWQ-item-JSON').value);
                 conf[conf.commonData.activeType].controls.genrateButton.el.click();
                 itemQuantity.value = itemQuantity.value - 1;
@@ -717,7 +746,7 @@
             }
         }
         conf.commonData.previousTaskStartTime = null;
-        awqLog('executeNewTask - No more tasks found');
+        awqLog('executeNewTask: No more tasks found');
         toggleProcessButton(false); // No more tasks to process
         playWorkCompleteSound();
     }
@@ -737,7 +766,7 @@
         refreshSettings();
     }
     function refreshSettings() {
-        awqLog('refreshSettings saved settings:'+Object.keys(conf.savedSetting).length);
+        awqLog('refreshSettings: saved settings:'+Object.keys(conf.savedSetting).length);
         conf.ui.settingName.value = "";
         conf.ui.settingsStorage.innerHTML = "";
 
@@ -748,7 +777,6 @@
             conf.ui.settingsStorage.appendChild(newOption);
         }
         if(Object.keys(conf.savedSetting).length < 1) {
-            awqLog('addin blank');
             let blankOption = document.createElement('option');
             blankOption.innerHTML = "Stored settings";
             blankOption.value = "";
@@ -756,15 +784,18 @@
         }
     }
     async function loadSetting() {
+
         if(conf.ui.settingsStorage.value.length < 1) return;
         let itemName = conf.ui.settingsStorage.options[conf.ui.settingsStorage.selectedIndex].text;
         let itemType = itemName.split('-')[0];
+        awqLog('loadSetting: ' + itemName);
 
         await loadJson(conf.ui.settingsStorage.value);
     }
 
     function switchTabAndWait(p_type) {
         if(p_type == conf.commonData.activeType) return;
+        awqLog('switchTabAndWait: ' + p_type);
 
         conf.shadowDOM.root.querySelector(conf[p_type].controls.tabButton.sel).click(); // Using .el doesn't work
 
@@ -782,7 +813,7 @@
     }
 
     function switchExtrasResizeModeTabAndWait(p_targetMode) {
-        awqLog('switchExtrasResizeModeTabAndWait input ' + p_targetMode);
+        awqLog('switchExtrasResizeModeTabAndWait: ' + p_targetMode);
         function correctResizeModeTabVisible() {
             let scaleByVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByContainerSel).style.display == 'none' ? false : true;
             let scaleToVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToContainerSel).style.display == 'none' ? false : true;
@@ -802,7 +833,7 @@
             let waitForSwitchInterval = setInterval(function() {
                 if(!correctResizeModeTabVisible()) return;
                 conf.commonData.waiting = false;
-                awqLog('switchExtrasResizeModeTabAndWait switch complete');
+                awqLog('switchExtrasResizeModeTabAndWait: switch complete');
                 clearInterval(waitForSwitchInterval);
                 resolve();
             });
@@ -810,7 +841,7 @@
     }
 
     function switchModelAndWait(p_target_model) {
-        awqLog('switchModel target=' + p_target_model);
+        awqLog('switchModelAndWait:' + p_target_model);
         let selectElem = conf.commonData.sdModelCheckpoint.el;
         let selectElemContainer = conf.commonData.sdModelCheckpointContainer.el;
         let oldValue = selectElem.value;
@@ -897,7 +928,7 @@
 
     function getValueJSON(p_type) {
 		let type = p_type || conf.commonData.activeType;
-        awqLog('getValueJSON type=' + type);
+        awqLog('getValueJSON: type=' + type);
         let valueJSON = {type:type};
         for (let prop in conf[type]) {
             if(prop !== 'controls') {
@@ -926,7 +957,7 @@
         let inputJSONObject = JSON.parse(p_json);
 		let type = inputJSONObject.type ? inputJSONObject.type : conf.commonData.activeType;
         let waitForThisContainer;
-        awqLog('loadJson type=' + type);
+        awqLog('loadJson: ' + type);
 
         if(inputJSONObject.sdModelCheckpoint) await switchModelAndWait(inputJSONObject.sdModelCheckpoint); // Switch model?
 
@@ -938,7 +969,7 @@
             let triggerOnBaseElem = true;
             if(['type','extrasResizeMode','sdModelCheckpoint'].includes(prop)) continue;
             try {
-                awqLog(prop + ' value='+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
+                awqLog('loadJson: loading ' + prop + ', changeing value '+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
                 if(conf[type][prop].el.type == 'fieldset') {
                     triggerOnBaseElem = false; // No need to trigger this on base element
                     conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
