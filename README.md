@@ -29,5 +29,5 @@ The interface is added below the normal interface with one floating button in th
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
-* If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch 2023-01-01T10:08:40Z ([e5f1a37cb9b537d95b2df47c96b4a4f7242fd294](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/e5f1a37cb9b537d95b2df47c96b4a4f7242fd294))
+* If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch 2023-01-02T03:11:10Z ([fd4461d44c7256d56889f5b5ed9fb660a859172f](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/fd4461d44c7256d56889f5b5ed9fb660a859172f))
 * Settings for "Prompts from file or textbox" is not supported

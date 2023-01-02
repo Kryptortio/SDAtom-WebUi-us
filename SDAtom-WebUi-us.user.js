@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.8.7
+// @version      0.8.8
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -29,7 +29,7 @@
         },
         t2i: {
             controls:{
-                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(1)"},
+                tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(1)"},
                 genrateButton: {sel:"#txt2img_generate"},
                 skipButton: {sel:"#txt2img_skip"},
             },
@@ -37,32 +37,33 @@
             prompt: {sel:"#txt2img_prompt textarea"},
             negPrompt: {sel:"#txt2img_neg_prompt textarea"},
 
-            sample: {sel:"#range_id_0",sel2:"#txt2img_steps input"},
+            sample: {sel:"#txt2img_steps [id^=range_id]",sel2:"#txt2img_steps input"},
             sampleMethod: {sel:"#txt2img_sampling select"},
 
-            width:  {sel:"#range_id_1",sel2:"#component-50 input"},
-            height: {sel:"#range_id_2",sel2:"#component-51 input"},
+            width:  {sel:"#txt2img_width [id^=range_id]",sel2:"#txt2img_width input"},
+            height: {sel:"#txt2img_height [id^=range_id]",sel2:"#txt2img_height input"},
 
-            restoreFace: {sel:"#component-54 input"},
-            tiling: {sel:"#component-55 input"},
-            highresFix: {sel:"#component-56 input"},
-            fpWidth: {sel:"#range_id_3",sel2:"#component-59 input"},
-            fpHeight: {sel:"#range_id_4",sel2:"#component-60 input"},
-            denoise: {sel:"#range_id_5",sel2:"#component-61 input"},
+            restoreFace: {sel:"#txt2img_restore_faces input"},
+            tiling: {sel:"#txt2img_tiling input"},
+            highresFix: {sel:"#txt2img_enable_hr input"},
+            fpWidth: {sel:"#txt2img_firstphase_width [id^=range_id]",sel2:"#txt2img_firstphase_width input"},
+            fpHeight: {sel:"#txt2img_firstphase_height [id^=range_id]",sel2:"#txt2img_firstphase_height input"},
+            denoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
 
-            extra: {sel:"#subseed_show_box input"},
-            varSeed: {sel:"#component-81 input"},
-            varStr: {sel:"#range_id_9",sel2:"#component-85 input"},
-            varRSFWidth: {sel:"#range_id_10",sel2:"#component-88 input"},
-            varRSFHeight: {sel:"#range_id_11",sel2:"#component-89 input"},
+            batchCount: {sel:"#txt2img_batch_count [id^=range_id]",sel2:"#txt2img_batch_count input"},
+            batchSize: {sel:"#txt2img_batch_size [id^=range_id]",sel2:"#txt2img_batch_size input"},
 
-            batchCount: {sel:"#range_id_6",sel2:"#component-64 input"},
-            batchSize: {sel:"#range_id_7",sel2:"#component-65 input"},
+            cfg: {sel:"#txt2img_cfg_scale [id^=range_id]",se2:"#txt2img_cfg_scale input"},
 
-            cfg: {sel:"#range_id_8",se2:"#component-67 input"},
+            seed: {sel:"#txt2img_seed input"},
 
-            seed: {sel:"#component-71 input"},
-            script: {sel:"#component-91 select"},
+            extra: {sel:"#txt2img_subseed_show input"},
+            varSeed: {sel:"#txt2img_subseed input"},
+            varStr: {sel:"#txt2img_subseed_strength [id^=range_id]",sel2:"#txt2img_subseed_strength input"},
+            varRSFWidth: {sel:"#txt2img_seed_resize_from_w [id^=range_id]",sel2:"#txt2img_seed_resize_from_w input"},
+            varRSFHeight: {sel:"#txt2img_seed_resize_from_h [id^=range_id]",sel2:"#txt2img_seed_resize_from_h input"},
+
+            script: {sel:"#txt2img_script_container select"},
 
             scriptPromptMatrixPutVar: {sel:"#component-95 input"},
             scriptPromptMatrixUseDiff: {sel:"#component-95 input"},
@@ -77,7 +78,7 @@
         },
         i2i:{
             controls:{
-                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(2)"},
+                tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(2)"},
                 genrateButton: {sel:"#img2img_generate"},
                 skipButton: {sel:"#img2img_skip"},
             },
@@ -87,29 +88,30 @@
 
             resizeMode: {sel:"#resize_mode"},
 
-            sample: {sel:"#range_id_15",sel2:"#img2img_steps input"},
+            sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
             sampleMethod: {sel:"#img2img_sampling select"},
 
-            width:  {sel:"#range_id_16",sel2:"#img2img_width input"},
-            height: {sel:"#range_id_17",sel2:"#img2img_height input"},
+            width:  {sel:"#img2img_width [id^=range_id]",sel2:"#img2img_width input"},
+            height: {sel:"#img2img_height [id^=range_id]",sel2:"#img2img_height input"},
 
-            restoreFace: {sel:"#component-223 input"},
-            tiling: {sel:"#component-224 input"},
+            restoreFace: {sel:"#img2img_restore_faces input"},
+            tiling: {sel:"#img2img_tiling input"},
 
-            extra: {sel:"#subseed_show input"},
-            varSeed: {sel:"#component-247 input"},
-            varStr: {sel:"#range_id_22",sel2:"#component-251 input"},
-            varRSFWidth: {sel:"#range_id_23",sel2:"#component-254 input"},
-            varRSFHeight: {sel:"#range_id_24",sel2:"#component-255 input"},
+            batchCount: {sel:"#img2img_batch_count [id^=range_id]",sel2:"#img2img_batch_count input"},
+            batchSize: {sel:"#img2img_batch_size [id^=range_id]",sel2:"#img2img_batch_size input"},
 
-            batchCount: {sel:"#range_id_18",sel2:"#component-227 input"},
-            batchSize: {sel:"#range_id_19",sel2:"#component-228 input"},
+            cfg: {sel:"#img2img_cfg_scale [id^=range_id]",se2:"#img2img_cfg_scale input"},
 
-            cfg: {sel:"#range_id_20",se2:"#component-231 input"},
+            denoise: {sel:"#img2img_denoising_strength [id^=range_id]",se2:"#img2img_denoising_strength input"},
 
-            denoise: {sel:"#range_id_21",se2:"#component-232 input"},
+            seed: {sel:"#img2img_seed input"},
 
-            seed: {sel:"#component-237 input"},
+            extra: {sel:"#txt2img_subseed_show input"},
+            varSeed: {sel:"#img2img_subseed input"},
+            varStr: {sel:"#img2img_subseed_strength [id^=range_id]",sel2:"#img2img_subseed_strength input"},
+            varRSFWidth: {sel:"#img2img_seed_resize_from_w [id^=range_id]",sel2:"#img2img_seed_resize_from_w input"},
+            varRSFHeight: {sel:"#img2img_seed_resize_from_h [id^=range_id]",sel2:"#img2img_seed_resize_from_h input"},
+
             script: {sel:"#tab_img2img #script_list select"},
 
             scriptPromptMatrixPutVar: {sel:"#component-291 input"},
@@ -161,32 +163,32 @@
         },
         ext:{
             controls:{
-                tabButton: {sel:"#component-733 > div.tabs > div button:nth-child(3)"},
+                tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(3)"},
                 genrateButton: {sel:"#extras_generate"},
-                loadingElement:{sel:"#component-391 .wrap"},
+                loadingElement:{sel:"#image_buttons_extras + div[id^=component-] .wrap"},
                 extrasResizeMode:{
                     scaleByButtonSel:"#extras_resize_mode button:nth-child(1)",
-                    scaleByContainerSel:"#extras_resize_mode #component-354",
+                    scaleByContainerSel:"#extras_scale_by_tab",
                     scaleToButtonSel:"#extras_resize_mode button:nth-child(2)",
-                    scaleToContainerSel:"#extras_resize_mode #component-357",
+                    scaleToContainerSel:"#extras_scale_to_tab",
                 },
             },
 
 
-            scaleByResize:{sel:"#component-355 input",sel2:"#range_id_38"},
+            scaleByResize:{sel:"#extras_upscaling_resize input",sel2:"#range_id_38"},
 
-            scaleToWidth:{sel:"#component-360 input"},
-            scaleToHeight:{sel:"#component-361 input"},
-            scaleToCropToFit:{sel:"#component-363 input"},
+            scaleToWidth:{sel:"#extras_upscaling_resize_w input"},
+            scaleToHeight:{sel:"#extras_upscaling_resize_h input"},
+            scaleToCropToFit:{sel:"#extras_upscaling_crop input"},
 
 
             upscaler1:{sel:"#extras_upscaler_1"},
             upscaler2:{sel:"#extras_upscaler_2"},
-            upscale2Vis:{sel:"#component-370 input",sel2:"#range_id_39"},
-            GFPGANVis:{sel:"#component-373 input",sel2:"#range_id_40"},
-            CodeFormVis:{sel:"#component-376 input",sel2:"#range_id_41"},
-            CodeFormWeight:{sel:"#component-377 input",sel2:"#range_id_42"},
-            UpsBeforeFace:{sel:"#component-380 input"},
+            upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#range_id_39"},
+            GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#range_id_40"},
+            CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#range_id_41"},
+            CodeFormWeight:{sel:"#extras_codeformer_weight input",sel2:"#range_id_42"},
+            UpsBeforeFace:{sel:"#extras_upscale_before_face_fix input"},
 
         },
         ui:{},
