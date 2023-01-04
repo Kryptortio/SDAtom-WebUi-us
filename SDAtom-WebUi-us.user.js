@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.0
+// @version      0.9.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -81,12 +81,26 @@
                 tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(2)"},
                 genrateButton: {sel:"#img2img_generate"},
                 skipButton: {sel:"#img2img_skip"},
+                i2iMode:{
+                    i2iButtonSel:"#mode_img2img button:nth-child(1)",
+                    i2iContainerSel:"#img2img_img2img_tab",
+                    inpaintButtonSel:"#mode_img2img button:nth-child(2)",
+                    inpaintContainerSel:"#img2img_inpaint_tab",
+                },
             },
 
             prompt: {sel:"#img2img_prompt textarea"},
             negPrompt: {sel:"#img2img_neg_prompt textarea"},
 
             resizeMode: {sel:"#resize_mode"},
+
+            inpaintBlur: {sel:"#img2img_mask_blur [id^=range_id]",sel2:"#img2img_mask_blur"},
+            inpaintMaskSource: {sel:"#mask_mode"},
+            inpaintMaskMode: {sel:"#img2img_mask_mode"},
+            inpaintMaskContent: {sel:"#img2img_inpainting_fill"},
+            inpaintArea: {sel:"#img2img_inpaint_full_res"},
+            inpaintPadding: {sel:"#img2img_inpaint_full_res_padding [id^=range_id]",sel2:"#img2img_inpaint_full_res_padding"},
+
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
             sampleMethod: {sel:"#img2img_sampling select"},
@@ -209,6 +223,9 @@
     const c_defaultOtputConsoleTextHTML = `<span class="console-description" style="color:darkgray">${c_defaultOtputConsoleText}</span>`;
     const c_extraResizeModeScaleByType = 1;
     const c_extraResizeModeScaleToType = 2;
+    const c_I2IModeType = 1;
+    const c_inpaintModeType = 2;
+    const c_wait_tick_duration = 200;
 
     // ----------------------------------------------------------------------------- Logging
     console.log(`Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`);
@@ -247,7 +264,7 @@
     window.console.info = function(p_msg) {awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldInfo(p_msg);}
     window.console.log = function(p_msg) {awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldlog(p_msg);}
     // ----------------------------------------------------------------------------- Wait for content to load
-    let waitForLoadInterval = setInterval(initAWQ, 500);
+    let waitForLoadInterval = setInterval(initAWQ, c_wait_tick_duration);
     function initAWQ() {
         conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel).shadowRoot;
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
@@ -279,7 +296,7 @@
         mapElementsToConf(conf.ext, 'ext object');
         mapElementsToConf(conf.ext.controls, 'ext control');
 
-        setInterval(updateStatus, 100);
+        setInterval(updateStatus, c_wait_tick_duration);
 
 
     }
@@ -649,7 +666,7 @@
 
             cogElem.animate([{ transform: 'rotate(0)' },{transform: 'rotate(360deg)'}], {duration: 1000,iterations: Infinity});
 
-            executeNewTask();
+            executeAllNewTasks();
         } else {
             awqLogPublishMsg('Processing <b>ended</b>');
             conf.commonData.processing = false;
@@ -686,6 +703,7 @@
     function updateStatus() {
         let previousType = conf.commonData.activeType;
         let previousWorking = conf.commonData.working;
+
         let workingOnI2I = conf.i2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnT2I = conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnExt = conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
@@ -700,16 +718,11 @@
 			conf.commonData.activeType = 'other';
 		}
 
-        conf.commonData.working = workingOnI2I || workingOnT2I || workingOnExt;
-
         let typeChanged = conf.commonData.activeType !== previousType ? true : false;
         let workingChanged = conf.commonData.working !== previousWorking ? true : false;
 
         if(typeChanged) awqLog('updateStatus: active type changed to:' + conf.commonData.activeType);
         if(workingChanged) awqLog('updateStatus: Work status changed to:' + conf.commonData.working);
-
-        // Time to execute a new taks?
-        if(workingChanged) executeNewTask();
 
         // If no work is being done for a while disable queue
         stuckProcessingCounter = !conf.commonData.waiting && !workingChanged && !conf.commonData.working && conf.commonData.processing ? stuckProcessingCounter + 1 : 0;
@@ -737,11 +750,13 @@
             if(itemQuantity.value > 0) {
                 awqLog('executeNewTask: found next work item with index ' + i + ', quantity ' + itemQuantity.value + ' and type ' + itemType);
                 await loadJson(queueItems[i].querySelector('.AWQ-item-JSON').value);
-                conf[conf.commonData.activeType].controls.genrateButton.el.click();
+                await clickStartButton(itemType);
+                conf.commonData.working = true;
                 itemQuantity.value = itemQuantity.value - 1;
                 itemQuantity.onchange();
                 awqLogPublishMsg(`Started working on ${itemType} queue item ${i+1} (${itemQuantity.value} more to go) `);
                 conf.commonData.previousTaskStartTime = Date.now();
+                await waitForTaskToComplete(itemType);
                 return;
             }
         }
@@ -749,6 +764,20 @@
         awqLog('executeNewTask: No more tasks found');
         toggleProcessButton(false); // No more tasks to process
         playWorkCompleteSound();
+    }
+
+    async function executeAllNewTasks() {
+        while(conf.commonData.processing) {
+/*            let itemType;
+            while(!itemType && conf.commonData.processing) {
+                await executeNewTask();
+                await sleep(500); // Minimum wait to not lock or call again to quickly
+            }
+
+            if(itemType) await waitForTaskToComplete(itemType);
+*/
+            await executeNewTask();
+        }
     }
 
     function playWorkCompleteSound() { if(localStorage.awqNotificationSound == 1) c_audio_base64.play();}
@@ -793,6 +822,33 @@
         await loadJson(conf.ui.settingsStorage.value);
     }
 
+
+    function clickStartButton(p_type) {
+        const c_max_time_to_wait = 100;
+        let targetButton = conf[conf.commonData.activeType].controls.genrateButton.el;
+        awqLog(`clickStartButton: working ${conf.commonData.working} waiting ${conf.commonData.working} type ${p_type}`);
+        if(conf.commonData.working || conf.commonData.waiting) return;
+
+        targetButton.click();
+
+        conf.commonData.waiting = true;
+        return new Promise(resolve => {
+            let retryCount = 0;
+            let waitForSwitchInterval = setInterval(function() {
+                retryCount++;
+                if(retryCount >= c_max_time_to_wait) {
+                    targetButton.click(); retryCount = 0;
+                    awqLog(`Work has not started after ${c_max_time_to_wait/10} seconds, clicked again`);
+                }
+                if(!webUICurrentyWorkingOn(p_type)) return;
+                conf.commonData.waiting = false;
+                awqLog('clickStartButton: work has started');
+                clearInterval(waitForSwitchInterval);
+                resolve();
+            },c_wait_tick_duration);
+        });
+    }
+
     function switchTabAndWait(p_type) {
         if(p_type == conf.commonData.activeType) return;
         awqLog('switchTabAndWait: ' + p_type);
@@ -808,7 +864,35 @@
                 awqLogPublishMsg(`Switched active tab from ${startingTab} to ${conf.commonData.activeType}`);
                 clearInterval(waitForSwitchInterval);
                 resolve();
-            });
+            },c_wait_tick_duration);
+        });
+    }
+
+    function switchI2IModeTabAndWait(p_targetMode) {
+        awqLog('switchI2IModeTabAndWait: ' + p_targetMode);
+        function correctI2IModeTabVisible() {
+            let i2iVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iContainerSel).style.display == 'none' ? false : true;
+            let inpaintVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintContainerSel).style.display == 'none' ? false : true;
+            return (i2iVisble && p_targetMode == c_I2IModeType) || (inpaintVisble && p_targetMode == c_inpaintModeType);
+        }
+
+        if(correctI2IModeTabVisible()) return;
+
+        if(p_targetMode == c_I2IModeType) {
+            conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iButtonSel).click();
+        } else if(p_targetMode == c_inpaintModeType) {
+            conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintButtonSel).click();
+        }
+
+        conf.commonData.waiting = true;
+        return new Promise(resolve => {
+            let waitForSwitchInterval = setInterval(function() {
+                if(!correctI2IModeTabVisible()) return;
+                conf.commonData.waiting = false;
+                awqLog('switchI2IModeTabAndWait: switch complete');
+                clearInterval(waitForSwitchInterval);
+                resolve();
+            },c_wait_tick_duration);
         });
     }
 
@@ -836,7 +920,7 @@
                 awqLog('switchExtrasResizeModeTabAndWait: switch complete');
                 clearInterval(waitForSwitchInterval);
                 resolve();
-            });
+            },c_wait_tick_duration);
         });
     }
 
@@ -861,7 +945,33 @@
                 awqLogPublishMsg(`${p_target_model} has completed loading`);
                 conf.commonData.waiting = false;
                 resolve();
-            },100);
+            },c_wait_tick_duration);
+        });
+    }
+
+    function webUICurrentyWorkingOn(p_itemType) {
+        if(p_itemType == 'i2i') {
+            return conf.i2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
+        } else if (p_itemType == 't2i') {
+            return conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
+        } else {
+            return conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
+        }
+    }
+
+    function waitForTaskToComplete(p_itemType) {
+        awqLog(`waitForTaskToComplete: Waiting to complete work for ${p_itemType}`);
+
+        conf.commonData.waiting = true;
+        return new Promise(resolve => {
+            let waitForCompleteInterval = setInterval(function() {
+                if(webUICurrentyWorkingOn(p_itemType)) return;
+                clearInterval(waitForCompleteInterval);
+                awqLog(`Work is complete for ${p_itemType}`);
+                conf.commonData.waiting = false;
+                conf.commonData.working = false;
+                resolve();
+            },c_wait_tick_duration);
         });
     }
 
@@ -925,6 +1035,9 @@
         }
         return true;
     }
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     function getValueJSON(p_type) {
 		let type = p_type || conf.commonData.activeType;
@@ -950,12 +1063,18 @@
             //let scaleToVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToContainerSel).style.display == 'none' ? false : true;
             valueJSON.extrasResizeMode = scaleByVisble ? 1 : 2;
         }
+        if(type == 'i2i') { // Needs special saving since it's not an input but a tab switch
+            let i2iVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iContainerSel).style.display == 'none' ? false : true;
+            //let inpaintVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintContainerSel).style.display == 'none' ? false : true;
+            valueJSON.i2iMode = i2iVisble ? 1 : 2;
+        }
         valueJSON.sdModelCheckpoint = conf.commonData.sdModelCheckpoint.el.value;
         return JSON.stringify(valueJSON);
     }
     async function loadJson(p_json) {
         let inputJSONObject = JSON.parse(p_json);
 		let type = inputJSONObject.type ? inputJSONObject.type : conf.commonData.activeType;
+        let oldData = JSON.parse(getValueJSON(type));
         let waitForThisContainer;
         awqLog('loadJson: ' + type);
 
@@ -965,11 +1084,16 @@
 
         if(inputJSONObject.extrasResizeMode) await switchExtrasResizeModeTabAndWait(inputJSONObject.extrasResizeMode); // Needs special loading since it's not an input but a tab switch
 
+        if(inputJSONObject.i2iMode) await switchI2IModeTabAndWait(inputJSONObject.i2iMode); // Needs special loading since it's not an input but a tab switch
+
+        let loadOutput = 'loadJson: loaded: ';
+
         for (let prop in inputJSONObject) {
             let triggerOnBaseElem = true;
-            if(['type','extrasResizeMode','sdModelCheckpoint'].includes(prop)) continue;
+            if(['type','extrasResizeMode','sdModelCheckpoint', 'i2iMode'].includes(prop)) continue;
             try {
-                awqLog('loadJson: loading ' + prop + ', changeing value '+conf[type][prop].el.value+ ' --->'+inputJSONObject[prop]);
+                if(oldData[prop] != inputJSONObject[prop]) loadOutput += `${prop}:${oldData[prop]}-->${inputJSONObject[prop]} | `;
+
                 if(conf[type][prop].el.type == 'fieldset') {
                     triggerOnBaseElem = false; // No need to trigger this on base element
                     conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
@@ -994,7 +1118,7 @@
                 awqLogPublishError(`Failed to load settings for ${type} item ${prop} with error ${e.message}: <pre style="margin: 0;">${e.stack}</pre>`);
             }
         }
-
+        awqLog(loadOutput.replace(/\|\s$/, ''));
 
     }
 
