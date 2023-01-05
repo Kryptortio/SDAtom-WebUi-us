@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.2
+// @version      0.9.3
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -45,10 +45,14 @@
 
             restoreFace: {sel:"#txt2img_restore_faces input"},
             tiling: {sel:"#txt2img_tiling input"},
+
             highresFix: {sel:"#txt2img_enable_hr input"},
             hrFixUpscaler: {sel:"#txt2img_hr_upscaler select"},
-            hrFixUpscaleBy: {sel:"#txt2img_hr_scale [id^=range_id]",sel2:"#txt2img_hr_scale input"},
+            hrFixSteps: {sel:"#txt2img_hires_steps [id^=range_id]",sel2:"#txt2img_hires_steps input"},
             hrFixdenoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
+            hrFixUpscaleBy: {sel:"#txt2img_hr_scale [id^=range_id]",sel2:"#txt2img_hr_scale input"},
+            hrFixWidth: {sel:"#txt2img_hr_resize_x [id^=range_id]",sel2:"#txt2img_hr_resize_x input"},
+            hrFixHeight: {sel:"#txt2img_hr_resize_y [id^=range_id]",sel2:"#txt2img_hr_resize_y input"},
 
             batchCount: {sel:"#txt2img_batch_count [id^=range_id]",sel2:"#txt2img_batch_count input"},
             batchSize: {sel:"#txt2img_batch_size [id^=range_id]",sel2:"#txt2img_batch_size input"},
@@ -65,16 +69,16 @@
 
             script: {sel:"#txt2img_script_container select"},
 
-            scriptPromptMatrixPutVar: {sel:"#component-98 input"},
-            scriptPromptMatrixUseDiff: {sel:"#component-99 input"},
+            scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
+            scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
 
-            scriptXYXtype:{sel:"#component-108 #x_type select"},
-            scriptXYYtype:{sel:"#component-112 #y_type select"},
-            scriptXYXVals:{sel:"#component-110 textarea"},
-            scriptXYYVals:{sel:"#component-114 textarea"},
-            scriptXYDrawLeg:{sel:"#component-116 input"},
-            scriptXYIncludeSep:{sel:"#component-117 input"},
-            scriptXYKeepMOne:{sel:"#component-118 input"},
+            scriptXYXtype:{sel:"#script_txt2txt_xy_plot_x_type select"},
+            scriptXYYtype:{sel:"#script_txt2txt_xy_plot_y_type select"},
+            scriptXYXVals:{sel:"#script_txt2txt_xy_plot_x_values textarea"},
+            scriptXYYVals:{sel:"#script_txt2txt_xy_plot_y_values textarea"},
+            scriptXYDrawLeg:{sel:"#script_txt2txt_xy_plot_draw_legend input"},
+            scriptXYIncludeSep:{sel:"#script_txt2txt_xy_plot_include_lone_images input"},
+            scriptXYKeepMOne:{sel:"#script_txt2txt_xy_plot_no_fixed_seeds input"},
         },
         i2i:{
             controls:{
@@ -122,64 +126,64 @@
 
             extra: {sel:"#txt2img_subseed_show input"},
             varSeed: {sel:"#img2img_subseed input"},
-            varStr: {sel:"#img2img_subseed_strength [id^=range_id]",sel2:"#img2img_subseed_strength input"},
-            varRSFWidth: {sel:"#img2img_seed_resize_from_w [id^=range_id]",sel2:"#img2img_seed_resize_from_w input"},
-            varRSFHeight: {sel:"#img2img_seed_resize_from_h [id^=range_id]",sel2:"#img2img_seed_resize_from_h input"},
+            varStr: {sel:"#img2img_subseed_strength input",sel2:"#img2img_subseed_strength [id^=range_id]"},
+            varRSFWidth: {sel:"#img2img_seed_resize_from_w input",sel2:"#img2img_seed_resize_from_w [id^=range_id]"},
+            varRSFHeight: {sel:"#img2img_seed_resize_from_h input",sel2:"#img2img_seed_resize_from_h [id^=range_id]"},
 
             script: {sel:"#tab_img2img #script_list select"},
 
-            scriptPromptMatrixPutVar: {sel:"#component-290 input"},
-            scriptPromptMatrixUseDiff: {sel:"#component-291 input"},
+            scriptPromptMatrixPutVar: {sel:"#script_img2img_prompt_matrix_put_at_start input"},
+            scriptPromptMatrixUseDiff: {sel:"#script_img2img_prompt_matrix_different_seeds input"},
 
-            scriptXYXtype:{sel:"#component-313 #x_type select"},
-            scriptXYYtype:{sel:"#component-317 #y_type select"},
-            scriptXYXVals:{sel:"#component-315 textarea"},
-            scriptXYYVals:{sel:"#component-319 textarea"},
-            scriptXYDrawLeg:{sel:"#component-321 input"},
-            scriptXYIncludeSep:{sel:"#component-322 input"},
-            scriptXYKeepMOne:{sel:"#component-323 input"},
+            scriptXYXtype:{sel:"#script_img2img_xy_plot_x_type select"},
+            scriptXYYtype:{sel:"#script_img2img_xy_plot_y_type select"},
+            scriptXYXVals:{sel:"#script_img2img_xy_plot_x_values textarea"},
+            scriptXYYVals:{sel:"#script_img2img_xy_plot_y_values textarea"},
+            scriptXYDrawLeg:{sel:"#script_img2img_xy_plot_draw_legend input"},
+            scriptXYIncludeSep:{sel:"#script_img2img_xy_plot_include_lone_images input"},
+            scriptXYKeepMOne:{sel:"#script_img2img_xy_plot_no_fixed_seeds input"},
 
-            scripti2iAltTestOverrideSampM:{sel:"#component-267 input"},
-            scripti2iAltTestOverrideProm:{sel:"#component-268 input"},
-            scripti2iAltTestOrigProm:{sel:"#component-269 textarea"},
-            scripti2iAltTestOrigNProm:{sel:"#component-270 textarea"},
-            scripti2iAltTestOverrideSampS:{sel:"#component-271 input"},
-            scripti2iAltTestDecStep:{sel:"#component-272",sel2:"#range_id_25"},
-            scripti2iAltTestOverrideDenoi:{sel:"#component-273 input"},
-            scripti2iAltTestDecCFG:{sel:"#component-274",sel2:"#range_id_26"},
-            scripti2iAltTestRand:{sel:"#component-275",sel2:"#range_id_27"},
-            scripti2iAltTestSigma:{sel:"#component-276 input"},
+            scripti2iAltTestOverrideSampM:{sel:"#script_img2img_alternative_test_override_sampler input"},
+            scripti2iAltTestOverrideProm:{sel:"#script_img2img_alternative_test_override_prompt input"},
+            scripti2iAltTestOrigProm:{sel:"#script_img2img_alternative_test_original_prompt textarea"},
+            scripti2iAltTestOrigNProm:{sel:"#script_img2img_alternative_test_original_negative_prompt textarea"},
+            scripti2iAltTestOverrideSampS:{sel:"#script_img2img_alternative_test_override_steps input"},
+            scripti2iAltTestDecStep:{sel:"#script_img2img_alternative_test_st input",sel2:"#script_img2img_alternative_test_st [id^=range_id]"},
+            scripti2iAltTestOverrideDenoi:{sel:"#script_img2img_alternative_test_override_strength input"},
+            scripti2iAltTestDecCFG:{sel:"#script_img2img_alternative_test_cfg input",sel2:"#script_img2img_alternative_test_cfg [id^=range_id]"},
+            scripti2iAltTestRand:{sel:"#script_img2img_alternative_test_randomness input",sel2:"#script_img2img_alternative_test_randomness [id^=range_id]"},
+            scripti2iAltTestSigma:{sel:"#script_img2img_alternative_test_sigma_adjustment input"},
 
-            scriptLoopbackLoops:{sel:"#component-279 input",sel2:"#range_id_28"},
-            scriptLoopbackDenoSCF:{sel:"#component-280 input",sel2:"#range_id_29"},
+            scriptLoopbackLoops:{sel:"#script_loopback_loops input",sel2:"#script_loopback_loops [id^=range_id]"},
+            scriptLoopbackDenoSCF:{sel:"#script_loopback_denoising_strength_change_factor input",sel2:"#script_loopback_denoising_strength_change_factor [id^=range_id]"},
 
-            scriptOutPMK2Pixels:{sel:"#component-284",sel2:"#range_id_30"},
-            scriptOutPMK2MaskBlur:{sel:"#component-285",sel2:"#range_id_31"},
-            scriptOutPMK2Left:{sel:"#component-286 label:nth-child(1) input"},
-            scriptOutPMK2Right:{sel:"#component-286 label:nth-child(2) input"},
-            scriptOutPMK2Up:{sel:"#component-286 label:nth-child(3) input"},
-            scriptOutPMK2Down:{sel:"#component-286 label:nth-child(4) input"},
-            scriptOutPMK2FallOff:{sel:"#component-287",sel2:"#range_id_32"},
-            scriptOutPMK2ColorVar:{sel:"#component-288",sel2:"#range_id_33"},
+            scriptOutPMK2Pixels:{sel:"#script_outpainting_mk2_pixels input",sel2:"#script_outpainting_mk2_pixels [id^=range_id]"},
+            scriptOutPMK2MaskBlur:{sel:"#script_outpainting_mk2_mask_blur input",sel2:"#script_outpainting_mk2_mask_blur [id^=range_id]"},
+            scriptOutPMK2Left:{sel:"#script_outpainting_mk2_direction label:nth-child(1) input"},
+            scriptOutPMK2Right:{sel:"#script_outpainting_mk2_direction label:nth-child(2) input"},
+            scriptOutPMK2Up:{sel:"#script_outpainting_mk2_direction label:nth-child(3) input"},
+            scriptOutPMK2Down:{sel:"#script_outpainting_mk2_direction label:nth-child(4) input"},
+            scriptOutPMK2FallOff:{sel:"#script_outpainting_mk2_noise_q input",sel2:"#script_outpainting_mk2_noise_q [id^=range_id]"},
+            scriptOutPMK2ColorVar:{sel:"#script_outpainting_mk2_color_variation input",sel2:"#script_outpainting_mk2_color_variation [id^=range_id]"},
 
-            scriptPoorManPixels:{sel:"#component-291 input",sel2:"#range_id_34"},
-            scriptPoorManMaskBlur:{sel:"#component-292 input",sel2:"#range_id_35"},
-            scriptPoorManMaskCont:{sel:"#component-293"},
-            scriptPoorManLeft:{sel:"#component-294 label:nth-child(1) input"},
-            scriptPoorManRight:{sel:"#component-294 label:nth-child(2) input"},
-            scriptPoorManUp:{sel:"#component-294 label:nth-child(3) input"},
-            scriptPoorManDown:{sel:"#component-294 label:nth-child(4) input"},
+            scriptPoorManPixels:{sel:"#script_poor_mans_outpainting_pixels input",sel2:"#script_poor_mans_outpainting_pixels [id^=range_id]"},
+            scriptPoorManMaskBlur:{sel:"#script_poor_mans_outpainting_mask_blur input",sel2:"#script_poor_mans_outpainting_mask_blur [id^=range_id]"},
+            scriptPoorManMaskCont:{sel:"#script_poor_mans_outpainting_inpainting_fill"},
+            scriptPoorManLeft:{sel:"#script_poor_mans_outpainting_direction label:nth-child(1) input"},
+            scriptPoorManRight:{sel:"#script_poor_mans_outpainting_direction label:nth-child(2) input"},
+            scriptPoorManUp:{sel:"#script_poor_mans_outpainting_direction label:nth-child(3) input"},
+            scriptPoorManDown:{sel:"#script_poor_mans_outpainting_direction label:nth-child(4) input"},
 
-            scriptSDUpTile:{sel:"#component-308 input",sel2:"#range_id_36"},
-            scriptSDUpScale:{sel:"#component-309 input",sel2:"#range_id_37"},
-            scriptSDUpUpcaler:{sel:"#component-310"},
+            scriptSDUpTile:{sel:"#script_sd_upscale_overlap input",sel2:"#script_sd_upscale_overlap [id^=range_id]"},
+            scriptSDUpScale:{sel:"#script_sd_upscale_scale_factor input",sel2:"#script_sd_upscale_scale_factor [id^=range_id]"},
+            scriptSDUpUpcaler:{sel:"#script_sd_upscale_upscaler_index"},
 
         },
         ext:{
             controls:{
                 tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(3)"},
                 genrateButton: {sel:"#extras_generate"},
-                loadingElement:{sel:"#image_buttons_extras + div[id^=component-] .wrap"},
+                loadingElement:{sel:"#html_info_x_extras .wrap"},
                 extrasResizeMode:{
                     scaleByButtonSel:"#extras_resize_mode button:nth-child(1)",
                     scaleByContainerSel:"#extras_scale_by_tab",
@@ -189,7 +193,7 @@
             },
 
 
-            scaleByResize:{sel:"#extras_upscaling_resize input",sel2:"#range_id_38"},
+            scaleByResize:{sel:"#extras_upscaling_resize input",sel2:"#extras_upscaling_resize [id^=range_id]"},
 
             scaleToWidth:{sel:"#extras_upscaling_resize_w input"},
             scaleToHeight:{sel:"#extras_upscaling_resize_h input"},
@@ -198,10 +202,10 @@
 
             upscaler1:{sel:"#extras_upscaler_1"},
             upscaler2:{sel:"#extras_upscaler_2"},
-            upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#range_id_39"},
-            GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#range_id_40"},
-            CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#range_id_41"},
-            CodeFormWeight:{sel:"#extras_codeformer_weight input",sel2:"#range_id_42"},
+            upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#extras_upscaler_2_visibility [id^=range_id]"},
+            GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
+            CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
+            CodeFormWeight:{sel:"#extras_codeformer_weight input",sel2:"#extras_codeformer_weight [id^=range_id]"},
             UpsBeforeFace:{sel:"#extras_upscale_before_face_fix input"},
 
         },
