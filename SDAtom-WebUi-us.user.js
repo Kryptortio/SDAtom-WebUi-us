@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.3
+// @version      0.9.4
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -22,6 +22,7 @@
             extContainer:{sel:"#tab_extras"},
             sdModelCheckpointContainer:{sel:"#setting_sd_model_checkpoint"},
             sdModelCheckpoint:{sel:"#setting_sd_model_checkpoint select"},
+            versionContainer:{sel:"#footer .versions"},
 
             working:false,
             processing:false,
@@ -232,6 +233,7 @@
     const c_wait_tick_duration = 200;
 
     // ----------------------------------------------------------------------------- Logging
+
     console.log(`Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`);
     function awqLog(p_message) {
         if(conf.verboseLog) {
@@ -241,7 +243,8 @@
     function awqLogPublishMsg(p_message, p_color) {
         if(!conf.ui.outputConsole) return;
         if(conf.ui.outputConsole.innerHTML.match('console-description')) {
-            conf.ui.outputConsole.innerHTML = `* Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`;
+            let ASDWUIVerText = '<span style="font-size: 0.9em;">' + conf.commonData.versionContainer.el.textContent + '</span>';
+            conf.ui.outputConsole.innerHTML = `* Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent} stable-diffusion-webui version ${ASDWUIVerText}`;
         }
         let lines = conf.ui.outputConsole.querySelectorAll('div');
         let line = document.createElement('div');
@@ -274,6 +277,8 @@
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
         clearInterval(waitForLoadInterval);
         awqLog('initAWQ: Content loaded');
+
+        conf.commonData.versionContainer.el = conf.shadowDOM.root.querySelector('#footer .versions');
 
         generateMainUI();
 
