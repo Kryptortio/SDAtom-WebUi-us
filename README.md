@@ -25,6 +25,23 @@ The script assumes you are running the web interface on the url http://127.0.0.1
 
 The interface is added below the normal interface with one floating button in the top right. If you are confused about what any button or field is for hold the mouse over it for a description. Settings and the queue are saved in your browser if you clear browser data it will be removed. The queue can be edited directly while it's being processed (maybe just avoid changing it just as it's finishing an item).
 
+# Troubleshooting
+
+Steps to try to fix issues
+
+* Check that you are running the latest version of [the script](https://raw.githubusercontent.com/Kryptortio/SDAtom-WebUi-us/main/SDAtom-WebUi-us.user.js) and an updated version of [the web ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui/).
+	* To update the script [click here](https://raw.githubusercontent.com/Kryptortio/SDAtom-WebUi-us/main/SDAtom-WebUi-us.user.js).
+	* To update AUTOMATIC1111 Stable Diffusion web UI you run the command `git pull origin master` in the same folder as webui.bat. Optionall you can note what version you have now first if you want the option to try going back later, to do that the command is `git rev-parse HEAD`
+* Check the [Limitations section](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations) to see if your version matches the commit listed there, so that you haven't updated to a new version that is not yet supported. Newer versions of AUTOMATIC1111 might work fine but sometimes they chane something that breaks the script.
+	* If you want to try to go to a specific version of AUTOMATIC1111 you can use the command `git checkout ` followed by the id you want to use (e.g. the one listed under [limitations](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations))
+
+Steps to try to find the cause of issues
+
+* Check the for errors in the output console (big white box at the bottom).
+* Activate verbose at the bottom reload the page and try again, are you seeing any errors in the optput console now?
+* Press F12 then go to the console tab and reload the page, do you see any errors in there?
+
+
 # Limitations
 
 * Only txt2img, img2img and extras are supported
