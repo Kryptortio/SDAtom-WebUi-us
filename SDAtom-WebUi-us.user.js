@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.5
+// @version      0.9.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -219,6 +219,7 @@
         verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
     };
     const c_emptyQueueString = 'Queue is empty';
+    const c_addToQueueButtonText = 'Add to queue';
     const c_processButtonText = 'Process queue';
     const c_defaultTextStoredSettings = "Stored settings";
     const c_innerUIWidth = 'calc(100vw - 20px)';
@@ -321,8 +322,9 @@
 
 
         let addToQueueButton = document.createElement('button');
-        addToQueueButton.innerHTML = 'Add to queue';
+        addToQueueButton.innerHTML = c_addToQueueButtonText;
         addToQueueButton.style.height = c_uiElemntHeight;
+        addToQueueButton.style.color = 'black';
         addToQueueButton.style.position = 'fixed';
         addToQueueButton.style.top = 0;
         addToQueueButton.style.right = 0;
@@ -336,11 +338,23 @@
         defaultQueueQuantity.placeholder = 'Def #';
         defaultQueueQuantity.style.height = c_uiElemntHeightSmall;
         defaultQueueQuantity.style.width = '50px';
-        defaultQueueQuantity.style.marginRight = '10px';
         defaultQueueQuantity.type = 'number';
         defaultQueueQuantity.title = "How many items of each will be added to the queue (default is 1)";
         defaultQueueQuantity.onfocus = function() {this.select();};
         container.appendChild(defaultQueueQuantity);
+        let assignDefaultToAll = document.createElement('button');
+        assignDefaultToAll.innerHTML = ' ⤵';
+        assignDefaultToAll.style.cursor = "pointer";
+        assignDefaultToAll.title = "Assign the default value to all queue items";
+        assignDefaultToAll.style.height = c_uiElemntHeight;
+        assignDefaultToAll.style.marginRight = '10px';
+        assignDefaultToAll.onclick = function() {
+            if(conf.ui.defaultQueueQuantity.value >= 0) {
+                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.ui.defaultQueueQuantity.value});
+                updateQueueState();
+            }
+        };
+        container.appendChild(assignDefaultToAll);
 
         let processButton = document.createElement('button');
         processButton.innerHTML = c_processButtonText;
@@ -533,6 +547,7 @@
         verboseOutputConsole.checked = conf.verboseLog;
         container.appendChild(verboseOutputConsole);
 
+        conf.ui.addToQueueButton = addToQueueButton;
         conf.ui.queueContainer = queueContainer;
         conf.ui.clearButton = clearButton;
         conf.ui.loadSettingButton = loadSettingButton;
@@ -725,6 +740,11 @@
         let workingOnT2I = conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnExt = conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
 
+        // Reset addToQueueButton
+        conf.ui.addToQueueButton.disabled = false;
+        conf.ui.addToQueueButton.innerHTML = c_addToQueueButtonText;
+        conf.ui.addToQueueButton.style.cursor = 'pointer';
+
 		if(conf.commonData.i2iContainer.el.style.display !== 'none') {
 			conf.commonData.activeType = 'i2i';
 		} else if(conf.commonData.t2iContainer.el.style.display !== 'none') {
@@ -733,6 +753,11 @@
 			conf.commonData.activeType = 'ext';
 		} else {
 			conf.commonData.activeType = 'other';
+
+            // Disable addToQueueButton
+            conf.ui.addToQueueButton.disabled = true;
+            conf.ui.addToQueueButton.innerHTML = 'Tab not supported';
+            conf.ui.addToQueueButton.style.cursor = 'not-allowed';
 		}
 
         let typeChanged = conf.commonData.activeType !== previousType ? true : false;
