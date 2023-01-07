@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.4
+// @version      0.9.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -220,6 +220,7 @@
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_processButtonText = 'Process queue';
+    const c_defaultTextStoredSettings = "Stored settings";
     const c_innerUIWidth = 'calc(100vw - 20px)';
     const c_uiElemntHeight = '25px';
     const c_uiElemntHeightSmall = '18px';
@@ -435,6 +436,13 @@
         settingsStorage.style.height = c_uiElemntHeight;
         settingsStorage.title = "List of stored settings (template of all settings)";
         container.appendChild(settingsStorage);
+        let editSettingButton = document.createElement('button');
+        editSettingButton.innerHTML = "✏️";
+        editSettingButton.style.height = c_uiElemntHeight;
+        editSettingButton.onclick = function() {editSetting(); }
+        editSettingButton.style.cursor = "pointer";
+        editSettingButton.title = "Edit the currently selected setting (a property can be removed to not change it when loading)";
+        container.appendChild(editSettingButton);
         let loadSettingButton = document.createElement('button');
         loadSettingButton.innerHTML = "Load";
         loadSettingButton.style.height = c_uiElemntHeight;
@@ -777,19 +785,82 @@
 
     async function executeAllNewTasks() {
         while(conf.commonData.processing) {
-/*            let itemType;
-            while(!itemType && conf.commonData.processing) {
-                await executeNewTask();
-                await sleep(500); // Minimum wait to not lock or call again to quickly
-            }
-
-            if(itemType) await waitForTaskToComplete(itemType);
-*/
             await executeNewTask();
         }
     }
 
     function playWorkCompleteSound() { if(localStorage.awqNotificationSound == 1) c_audio_base64.play();}
+
+    function editSetting() {
+
+        let settingStorage = conf.ui.settingsStorage;
+        let settingIndex = settingStorage.selectedIndex;
+        let settingOption = settingStorage.options[settingIndex];
+        let settingKey = settingOption.innerHTML;
+        if(settingKey == c_defaultTextStoredSettings) return;
+        awqLog('editSettings: index'+settingIndex);
+
+        let editContainer = document.createElement('div');
+        editContainer.style.cssText = 'position: fixed;bottom: 0;left: 0;width: 100vw;height: 100vh;background:black;z-index: 9999;';
+        let txtInput = document.createElement('input');
+        txtInput.style.cssText = 'width: 100vw;height: 10vh;';
+        txtInput.title = "Name of the settins set (do not remove the prefix)";
+        editContainer.appendChild(txtInput);
+        let txtArea = document.createElement('textarea');
+        txtArea.style.cssText = 'width: 100vw;height: 80vh;';
+        txtArea.title = 'The set of settings i JSON format (Edit the value inside the "" but leave structure intact, an entire propertey: "id":"value" can also be removed if you do not want this setting set to make any changes to that setting)';
+        editContainer.appendChild(txtArea);
+        let editButton = document.createElement('button');
+        editButton.style.cssText = 'width: 50vw;height: 10vh;';
+        editButton.innerHTML = 'OK';
+        editButton.title = "Save changes";
+        editContainer.appendChild(editButton);
+        let resetButton = document.createElement('button');
+        resetButton.style.cssText = 'width: 50vw;height: 10vh;';
+        resetButton.innerHTML = 'Reset';
+        resetButton.title = "Revert changes";
+        resetButton.onclick = function() {
+            txtArea.value = conf.ui.settingsStorage.options[settingIndex].value;
+            txtInput.value = conf.ui.settingsStorage.options[settingIndex].text;
+        }
+        editContainer.appendChild(resetButton);
+
+        resetButton.onclick();
+
+        document.body.style.overflow = 'hidden';
+        document.body.appendChild(editContainer);
+
+        editButton.onclick = function() {
+            // Validate
+            if(txtInput.value.length < 1) {
+                alert('Name is missing');
+                return;
+            }
+            if(!isJsonString(txtArea.value)) {
+                alert('Value is invalid JSON');
+                return;
+            }
+            if(!['t2i-','i2i-','ext-'].includes(txtInput.value.substr(0,4))) {
+                alert('Name does not have valid prefix (t2i-, i2i-, ext-)');
+                return;
+            }
+
+            // Remove overlay
+            document.body.style.overflow = 'scroll';
+            document.body.removeChild(editContainer);
+
+            // Update data and refresh UI
+            awqLog('editSettings: updating '+ settingKey + (settingKey == txtInput.value ? '' : ' to ' + txtInput.value));
+            delete conf.savedSetting[settingKey];
+            conf.savedSetting[txtInput.value] = txtArea.value;
+            localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
+            refreshSettings();
+
+            // Select option again
+            let optionToSelect = Array.from(settingStorage.options).find(item => item.text ===txtInput.value);
+            optionToSelect.selected = true;
+        };
+    }
 
     function saveSettings() {
         if(conf.ui.settingName.value.length < 1) {alert('Missing name'); return;}
@@ -816,7 +887,7 @@
         }
         if(Object.keys(conf.savedSetting).length < 1) {
             let blankOption = document.createElement('option');
-            blankOption.innerHTML = "Stored settings";
+            blankOption.innerHTML = c_defaultTextStoredSettings;
             blankOption.value = "";
             conf.ui.settingsStorage.appendChild(blankOption);
         }
@@ -830,7 +901,17 @@
 
         await loadJson(conf.ui.settingsStorage.value);
     }
+    function clearSetting() {
+        let ss = conf.ui.settingsStorage;
+        if(ss.value.length < 1) return;
+        awqLogPublishMsg(`Removed setting ` + ss.options[ss.selectedIndex].innerHTML);
+        delete conf.savedSetting[ss.options[ss.selectedIndex].innerHTML];
+        ss.removeChild(ss.options[ss.selectedIndex]);
 
+        localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
+        if(ss.value.length < 1) refreshSettings();
+
+    }
 
     function clickStartButton(p_type) {
         const c_max_time_to_wait = 100;
@@ -984,17 +1065,6 @@
         });
     }
 
-    function clearSetting() {
-        let ss = conf.ui.settingsStorage;
-        if(ss.value.length < 1) return;
-        awqLogPublishMsg(`Removed setting ` + ss.options[ss.selectedIndex].innerHTML);
-        delete conf.savedSetting[ss.options[ss.selectedIndex].innerHTML];
-        ss.removeChild(ss.options[ss.selectedIndex]);
-
-        localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
-        if(ss.value.length < 1) refreshSettings();
-
-    }
     function exportImport() {
         let exportJSON = JSON.stringify({
             savedSetting: conf.savedSetting,
