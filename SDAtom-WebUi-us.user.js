@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.6
+// @version      0.9.7
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -217,6 +217,7 @@
         maxOutputLines: localStorage.awqMaxOutputLines || 500,
         autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true),
         verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
+        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[{"desc":"Remove multi space","pattern":"\\\\s{2,}", "replace":" ", "flags":"g"}, {"desc":"Always \\\", \\\"","pattern":"\\\\s*,\\\\s*", "replace":", ", "flags":"g"}]'),
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
@@ -428,6 +429,31 @@
         importExportData.onfocus = function() {this.select();};
         container.appendChild(importExportData);
 
+        let promptFilter = document.createElement('input');
+        promptFilter.title = `Filters that are used to modify prompt when adding to queue. Example format [{"desc":"Remove multi space","pattern":"\\s{2,}", "replace":" ", "flags":"g"}] desc is optional and will only be shown in output console`;
+        promptFilter.placeholder = "Prompt filter (JSON array)";
+        promptFilter.value = JSON.stringify(conf.promptFilter);
+        promptFilter.onchange = function() {
+            if(isJsonString(promptFilter.value) ) {
+                localStorage.awqPromptFilter = JSON.stringify(promptFilter.value);
+                conf.promptFilter = JSON.parse(promptFilter.value);
+            }
+        }
+        container.appendChild(promptFilter);
+        let promptFilterNegLabel = document.createElement('label');
+        promptFilterNegLabel.innerHTML = 'Neg prompt';
+        promptFilterNegLabel.style.color = "white";
+        promptFilterNegLabel.style.marginLeft = "10px";
+        promptFilterNegLabel.titpromptFilterNegLabelle = "Also filter negative prompt";
+        container.appendChild(promptFilterNegLabel);
+        let promptFilterNeg = document.createElement('input');
+        promptFilterNeg.type = "checkbox";
+        promptFilterNeg.checked = true;
+        promptFilterNeg.style.cursor = "pointer";
+        promptFilterNeg.title = "Also filter negative prompt";
+        container.appendChild(promptFilterNeg);
+
+
         let queueContainer = document.createElement('div');
         queueContainer.style.width = c_innerUIWidth;
         queueContainer.style.border = "1px solid white";
@@ -558,6 +584,8 @@
         conf.ui.notificationSoundCheckbox = notificationSoundCheckbox;
         conf.ui.importExportData = importExportData;
         conf.ui.outputConsole = outputConsole;
+        conf.ui.promptFilter = promptFilter;
+        conf.ui.promptFilterNeg = promptFilterNeg;
 
 
         refreshSettings();
@@ -1090,6 +1118,26 @@
         });
     }
 
+    function filterPrompt(p_prompt_text, p_neg) {
+        let newPromptText = p_prompt_text;
+        for(let i=0; i < conf.promptFilter.length; i++) {
+            if(!conf.promptFilter[i].hasOwnProperty('pattern') ||
+               !conf.promptFilter[i].hasOwnProperty('flags') ||
+               !conf.promptFilter[i].hasOwnProperty('replace')) continue;
+
+            let regEx = new RegExp(conf.promptFilter[i].pattern, conf.promptFilter[i].flags);
+            let tmpNewPromptText = newPromptText.replace(regEx, conf.promptFilter[i].replace);
+
+            if(tmpNewPromptText !== newPromptText) {
+                let changesCount = levenshteinDist(newPromptText, tmpNewPromptText);
+                awqLogPublishMsg(`Filtered ${p_neg ? '(neg)' : ''}prompt with filter (${conf.promptFilter[i].desc}), ${changesCount} char changes`);
+                awqLog(`Filtered from:<pre>${newPromptText}</pre>to:<pre>${tmpNewPromptText}</pre>`);
+                newPromptText = tmpNewPromptText;
+            }
+        }
+        return newPromptText;
+    }
+
     function exportImport() {
         let exportJSON = JSON.stringify({
             savedSetting: conf.savedSetting,
@@ -1097,6 +1145,7 @@
             notificationSound: conf.notificationSound,
             maxOutputLines:conf.maxOutputLines,
             autoscrollOutput:conf.autoscrollOutput,
+            promptFilter:conf.promptFilter,
         });
         let importJSON = conf.ui.importExportData.value;
 
@@ -1122,12 +1171,14 @@
             conf.notificationSound = parsedImportJSON.notificationSound;
             conf.maxOutputLines = parsedImportJSON.maxOutputLines;
             conf.autoscrollOutput = parsedImportJSON.autoscrollOutput;
+            conf.promptFilter = parsedImportJSON.promptFilter;
             localStorage.awqNotificationSound = parsedImportJSON.awqNotificationSound;
             localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
             localStorage.awqNotificationSound = conf.notificationSound ? 1 : 0;
             localStorage.awqMaxOutputLines = conf.maxOutputLines;
             localStorage.awqAutoscrollOutput = conf.autoscrollOutput ? 1 : 0;
+            localStorage.awqPromptFilter = JSON.stringify(conf.promptFilter);
             location.reload();
         }
     }
@@ -1142,6 +1193,45 @@
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+    function stringDiffCount(p_str1, p_str2) {
+        let count = 0;
+        for(let i = 0; i < p_str1.length; i++){
+            if(p_str1[i] === p_str2[i]){
+                continue;
+            };
+            count++;
+        };
+        return count;
+    };
+    function levenshteinDist(s1, s2) {
+            if (s1 === s2) {
+                return 0;
+            } else {
+                var s1_len = s1.length, s2_len = s2.length;
+                if (s1_len && s2_len) {
+                    var i1 = 0, i2 = 0, a, b, c, c2, row = [];
+                    while (i1 < s1_len) {
+                        row[i1] = ++i1;
+                    }
+                    while (i2 < s2_len) {
+                        c2 = s2.charCodeAt(i2);
+                        a = i2;
+                        ++i2;
+                        b = i2;
+                        for (i1 = 0; i1 < s1_len; ++i1) {
+                            c = a + (s1.charCodeAt(i1) === c2 ? 0 : 1);
+                            a = row[i1];
+                            b = b < a ? (b < c ? b + 1 : c) : (a < c ? a + 1 : c);
+                            row[i1] = b;
+                        }
+                    }
+                    return b;
+                } else {
+                    return s1_len + s2_len;
+                }
+            }
+    };
+
 
     function getValueJSON(p_type) {
 		let type = p_type || conf.commonData.activeType;
@@ -1156,6 +1246,8 @@
                         valueJSON[prop] = conf[type][prop].el.checked;
                     } else { // Inputs, Textarea
                         valueJSON[prop] = conf[type][prop].el.value;
+                        if(prop == 'prompt') valueJSON[prop] = filterPrompt(valueJSON[prop]);
+                        if(prop == 'negPrompt' && conf.ui.promptFilterNeg.checked) valueJSON[prop] = filterPrompt(valueJSON[prop], true);
                     }
                 } catch(e) {
                     awqLogPublishError(`Failed to retrieve settings for ${type} item ${prop} with error ${e.message}: <pre style="margin: 0;">${e.stack}</pre>`);
