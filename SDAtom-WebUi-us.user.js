@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.8
+// @version      0.9.9
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -441,8 +441,11 @@
         promptFilter.value = JSON.stringify(conf.promptFilter);
         promptFilter.onchange = function() {
             if(isJsonString(promptFilter.value) ) {
-                localStorage.awqPromptFilter = JSON.stringify(promptFilter.value);
+                awqLog('promptFilter saved');
+                localStorage.awqPromptFilter = JSON.stringify(JSON.parse(promptFilter.value));
                 conf.promptFilter = JSON.parse(promptFilter.value);
+            } else {
+                awqLog('promptFilter is invalid:<pre>' + promptFilter.value+ '</pre>');
             }
         }
         container.appendChild(promptFilter);

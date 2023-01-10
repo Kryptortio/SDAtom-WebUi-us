@@ -30,10 +30,10 @@ The interface is added below the normal interface with one floating button in th
 Prompt filters can be used to process your prompts before they get added to the queue (textbox after the import/export text box). To add a filter you add a regular expression on the format `[{"desc":"description/name","pattern":"regex pattern","replace":"replacement string/regex","flags":"regex flags"}]` multiple regex can be added within the [] separated by commas. For experimenting with regex, this is a good site https://regex101.com/
 
 Example pattern filters:
-* {"desc":"Remove multiple spaces","pattern":"\\s{2,}","replace":" ","flags":"g"}
-* {"desc":"Always \", \" (space after , not before)","pattern":"\\s*,\\s*","replace":", ","flags":"g"}
-* {"desc":"Add the prefix banana to all prompt","pattern":"^","replace":"banana, ","flags":"g"}
-* {"desc":"Add the postfix banana to all prompt","pattern":"$","replace":", banana","flags":"g"}
+* `{"desc":"Remove multiple spaces","pattern":"\\s{2,}","replace":" ","flags":"g"}`
+* `{"desc":"Always \", \" (space after , not before)","pattern":"\\s*,\\s*","replace":", ","flags":"g"}`
+* `{"desc":"Add the prefix banana to all prompt","pattern":"^","replace":"banana, ","flags":"g"}`
+* `{"desc":"Add the postfix banana to all prompt","pattern":"$","replace":", banana","flags":"g"}`
 
 # Troubleshooting
 
