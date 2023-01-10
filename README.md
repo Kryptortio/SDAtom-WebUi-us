@@ -25,6 +25,16 @@ The script assumes you are running the web interface on the url http://127.0.0.1
 
 The interface is added below the normal interface with one floating button in the top right. If you are confused about what any button or field is for hold the mouse over it for a description. Settings and the queue are saved in your browser if you clear browser data it will be removed. The queue can be edited directly while it's being processed (maybe just avoid changing it just as it's finishing an item).
 
+## Prompt filter
+
+Prompt filters can be used to process your prompts before they get added to the queue (textbox after the import/export text box). To add a filter you add a regular expression on the format `[{"desc":"description/name","pattern":"regex pattern","replace":"replacement string/regex","flags":"regex flags"}]` multiple regex can be added within the [] separated by commas. For experimenting with regex, this is a good site https://regex101.com/
+
+Example pattern filters:
+* {"desc":"Remove multiple spaces","pattern":"\\s{2,}","replace":" ","flags":"g"}
+* {"desc":"Always \", \" (space after , not before)","pattern":"\\s*,\\s*","replace":", ","flags":"g"}
+* {"desc":"Add the prefix banana to all prompt","pattern":"^","replace":"banana, ","flags":"g"}
+* {"desc":"Add the postfix banana to all prompt","pattern":"$","replace":", banana","flags":"g"}
+
 # Troubleshooting
 
 Steps to try to fix issues
@@ -46,5 +56,5 @@ Steps to try to find the cause of issues
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
-* If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch 2023-01-07T10:30:06Z ([151233399c4b79934bdbb7c12a97eeb6499572fb](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/151233399c4b79934bdbb7c12a97eeb6499572fb))
+* If the devs updates the interface loading settings will break (but should be easy to fix), currently works fine using main branch 2023-01-10T16:11:47Z ([50fb20cedc8dcbf64f86aed6d6e89595d655e638](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/50fb20cedc8dcbf64f86aed6d6e89595d655e638))
 * Settings for "Prompts from file or textbox" is not supported

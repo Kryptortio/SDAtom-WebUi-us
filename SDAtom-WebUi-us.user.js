@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.7
+// @version      0.9.8
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -217,7 +217,7 @@
         maxOutputLines: localStorage.awqMaxOutputLines || 500,
         autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true),
         verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
-        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[{"desc":"Remove multi space","pattern":"\\\\s{2,}", "replace":" ", "flags":"g"}, {"desc":"Always \\\", \\\"","pattern":"\\\\s*,\\\\s*", "replace":", ", "flags":"g"}]'),
+        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[]'),
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
@@ -270,9 +270,15 @@
         }
     });
     let oldWarn = window.console.warn,oldInfo = window.console.info,oldlog = window.console.log;
-    window.console.warn = function(p_msg) {awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldWarn(p_msg);}
-    window.console.info = function(p_msg) {awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldInfo(p_msg);}
-    window.console.log = function(p_msg) {awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg, 'lightgray'); oldlog(p_msg);}
+    window.console.warn = function(p_msg) {
+        awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldWarn(p_msg);
+    }
+    window.console.info = function(p_msg) {
+        awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldInfo(p_msg);
+    }
+    window.console.log = function(p_msg) {
+        awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldlog(p_msg);
+    }
     // ----------------------------------------------------------------------------- Wait for content to load
     let waitForLoadInterval = setInterval(initAWQ, c_wait_tick_duration);
     function initAWQ() {
@@ -1203,6 +1209,14 @@
         };
         return count;
     };
+    function getCallStack() {
+        try {
+            throw new Error();
+        } catch (err) {
+            return err.stack.replace(/^getCallStack.*\n/, '');
+        }
+    }
+
     function levenshteinDist(s1, s2) {
             if (s1 === s2) {
                 return 0;
