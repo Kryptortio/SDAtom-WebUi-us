@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      0.9.9
+// @version      1.0.0
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -86,12 +86,14 @@
                 tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(2)"},
                 genrateButton: {sel:"#img2img_generate"},
                 skipButton: {sel:"#img2img_skip"},
-                i2iMode:{
-                    i2iButtonSel:"#mode_img2img button:nth-child(1)",
-                    i2iContainerSel:"#img2img_img2img_tab",
-                    inpaintButtonSel:"#mode_img2img button:nth-child(2)",
-                    inpaintContainerSel:"#img2img_inpaint_tab",
-                },
+                i2iMode:[
+                    {name:"i2i", buttonSel:"#mode_img2img button:nth-child(1)", containerSel:"#img2img_img2img_tab"},
+                    {name:"sketch", buttonSel:"#mode_img2img button:nth-child(2)", containerSel:"#img2img_img2img_sketch_tab"},
+                    {name:"inpaint", buttonSel:"#mode_img2img button:nth-child(3)", containerSel:"#img2img_inpaint_tab"},
+                    {name:"inpaintSketch", buttonSel:"#mode_img2img button:nth-child(4)", containerSel:"#img2img_inpaint_sketch_tab"},
+                    {name:"inpaintUpload", buttonSel:"#mode_img2img button:nth-child(5)", containerSel:"#img2img_inpaint_upload_tab"},
+                    {name:"batch", buttonSel:"#mode_img2img button:nth-child(6)", containerSel:"#img2img_batch_tab"},
+                ],
             },
 
             prompt: {sel:"#img2img_prompt textarea"},
@@ -100,12 +102,14 @@
             resizeMode: {sel:"#resize_mode"},
 
             inpaintBlur: {sel:"#img2img_mask_blur [id^=range_id]",sel2:"#img2img_mask_blur"},
-            inpaintMaskSource: {sel:"#mask_mode"},
             inpaintMaskMode: {sel:"#img2img_mask_mode"},
             inpaintMaskContent: {sel:"#img2img_inpainting_fill"},
             inpaintArea: {sel:"#img2img_inpaint_full_res"},
             inpaintPadding: {sel:"#img2img_inpaint_full_res_padding [id^=range_id]",sel2:"#img2img_inpaint_full_res_padding"},
 
+
+            i2iBatchInputDir: {sel:"#img2img_batch_input_dir textarea"},
+            i2iBatchOutputDir: {sel:"#img2img_batch_output_dir textarea"},
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
             sampleMethod: {sel:"#img2img_sampling select"},
@@ -185,12 +189,15 @@
                 tabButton: {sel:"#tabs > div:nth-child(1) > button:nth-child(3)"},
                 genrateButton: {sel:"#extras_generate"},
                 loadingElement:{sel:"#html_info_x_extras .wrap"},
-                extrasResizeMode:{
-                    scaleByButtonSel:"#extras_resize_mode button:nth-child(1)",
-                    scaleByContainerSel:"#extras_scale_by_tab",
-                    scaleToButtonSel:"#extras_resize_mode button:nth-child(2)",
-                    scaleToContainerSel:"#extras_scale_to_tab",
-                },
+                extrasResizeMode:[
+                    {name:"scaleBy",buttonSel:"#extras_resize_mode button:nth-child(1)",containerSel:"#extras_scale_by_tab"},
+                    {name:"scaleTo",buttonSel:"#extras_resize_mode button:nth-child(2)",containerSel:"#extras_scale_to_tab"},
+                ],
+                extrasMode:[
+                    {name:"singleImg",buttonSel:"#mode_extras button:nth-child(1)",containerSel:"#extras_single_tab"},
+                    {name:"batchProcess",buttonSel:"#mode_extras button:nth-child(2)",containerSel:"#extras_batch_process_tab"},
+                    {name:"batchDir",buttonSel:"#mode_extras button:nth-child(3)",containerSel:"#extras_batch_directory_tab"},
+                ],
             },
 
 
@@ -200,6 +207,9 @@
             scaleToHeight:{sel:"#extras_upscaling_resize_h input"},
             scaleToCropToFit:{sel:"#extras_upscaling_crop input"},
 
+            batchDirInput:{sel:"#extras_batch_input_dir textarea"},
+            batchDirOutput:{sel:"#extras_batch_output_dir textarea"},
+            batchDirShowImg:{sel:"#extras_show_extras_results input"},
 
             upscaler1:{sel:"#extras_upscaler_1"},
             upscaler2:{sel:"#extras_upscaler_2"},
@@ -231,8 +241,6 @@
     const c_defaultOtputConsoleTextHTML = `<span class="console-description" style="color:darkgray">${c_defaultOtputConsoleText}</span>`;
     const c_extraResizeModeScaleByType = 1;
     const c_extraResizeModeScaleToType = 2;
-    const c_I2IModeType = 1;
-    const c_inpaintModeType = 2;
     const c_wait_tick_duration = 200;
 
     // ----------------------------------------------------------------------------- Logging
@@ -268,16 +276,24 @@
                 'darkorange'
             );
         }
-    });
-    let oldWarn = window.console.warn,oldInfo = window.console.info,oldlog = window.console.log;
+    },true);
+    window.addEventListener("unhandledrejection", (event) => {
+        if(conf.verboseLog) {
+            awqLogPublishMsg(
+                `Javascript promise error (can be caused by something other than this script): ${event.reason}`,
+                'darkorange'
+            );
+        }
+    },true);
+    let oldWarn = window.console.warn,oldInfo = window.console.info,oldLog = window.console.log,oldError = window.console.error;
     window.console.warn = function(p_msg) {
-        awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldWarn(p_msg);
+        if(conf.verboseLog) awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldWarn(p_msg);
     }
     window.console.info = function(p_msg) {
-        awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldInfo(p_msg);
+        if(conf.verboseLog) awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldInfo(p_msg);
     }
     window.console.log = function(p_msg) {
-        awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldlog(p_msg);
+        if(conf.verboseLog) awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldLog(p_msg);
     }
     // ----------------------------------------------------------------------------- Wait for content to load
     let waitForLoadInterval = setInterval(initAWQ, c_wait_tick_duration);
@@ -704,10 +720,11 @@
         queueItem.appendChild(removeItem);
         queueItem.appendChild(moveItemUp);
         queueItem.appendChild(moveItemDown);
+        queueItem.appendChild(loadItem);
         queueItem.appendChild(itemType);
         queueItem.appendChild(itemQuantity);
         queueItem.appendChild(itemJSON);
-        queueItem.appendChild(loadItem);
+
         if(conf.ui.queueContainer.innerHTML == c_emptyQueueString) conf.ui.queueContainer.innerHTML = "";
         conf.ui.queueContainer.appendChild(queueItem);
 
@@ -1020,56 +1037,24 @@
         });
     }
 
-    function switchI2IModeTabAndWait(p_targetMode) {
-        awqLog('switchI2IModeTabAndWait: ' + p_targetMode);
-        function correctI2IModeTabVisible() {
-            let i2iVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iContainerSel).style.display == 'none' ? false : true;
-            let inpaintVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintContainerSel).style.display == 'none' ? false : true;
-            return (i2iVisble && p_targetMode == c_I2IModeType) || (inpaintVisble && p_targetMode == c_inpaintModeType);
+    function switchTabAndWaitUntilSwitched(p_targetTabName, p_tabConfig) {
+        awqLog('switchTabAndWaitUntilSwitched: p_target=' + p_targetTabName + ' p_config=' + p_tabConfig);
+
+        let targetTabConf = p_tabConfig.filter( (elem) => { return elem.name == p_targetTabName })[0];
+        function correctTabVisible() {
+            return conf.shadowDOM.root.querySelector(targetTabConf.containerSel).style.display == 'none' ? false : true;
         }
 
-        if(correctI2IModeTabVisible()) return;
+        if(correctTabVisible()) return;
 
-        if(p_targetMode == c_I2IModeType) {
-            conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iButtonSel).click();
-        } else if(p_targetMode == c_inpaintModeType) {
-            conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintButtonSel).click();
-        }
+        conf.shadowDOM.root.querySelector(targetTabConf.buttonSel).click();
 
         conf.commonData.waiting = true;
         return new Promise(resolve => {
             let waitForSwitchInterval = setInterval(function() {
-                if(!correctI2IModeTabVisible()) return;
+                if(!correctTabVisible()) return;
                 conf.commonData.waiting = false;
-                awqLog('switchI2IModeTabAndWait: switch complete');
-                clearInterval(waitForSwitchInterval);
-                resolve();
-            },c_wait_tick_duration);
-        });
-    }
-
-    function switchExtrasResizeModeTabAndWait(p_targetMode) {
-        awqLog('switchExtrasResizeModeTabAndWait: ' + p_targetMode);
-        function correctResizeModeTabVisible() {
-            let scaleByVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByContainerSel).style.display == 'none' ? false : true;
-            let scaleToVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToContainerSel).style.display == 'none' ? false : true;
-            return (scaleByVisble && p_targetMode == c_extraResizeModeScaleByType) || (scaleToVisble && p_targetMode == c_extraResizeModeScaleToType);
-        }
-
-        if(correctResizeModeTabVisible()) return;
-
-        if(p_targetMode == c_extraResizeModeScaleByType) {
-            conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByButtonSel).click();
-        } else if(p_targetMode == c_extraResizeModeScaleToType) {
-            conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToButtonSel).click();
-        }
-
-        conf.commonData.waiting = true;
-        return new Promise(resolve => {
-            let waitForSwitchInterval = setInterval(function() {
-                if(!correctResizeModeTabVisible()) return;
-                conf.commonData.waiting = false;
-                awqLog('switchExtrasResizeModeTabAndWait: switch complete');
+                awqLog('switchTabAndWaitUntilSwitched: switch complete');
                 clearInterval(waitForSwitchInterval);
                 resolve();
             },c_wait_tick_duration);
@@ -1254,6 +1239,21 @@
 		let type = p_type || conf.commonData.activeType;
         awqLog('getValueJSON: type=' + type);
         let valueJSON = {type:type};
+
+        if(type == 'ext') { // Needs special saving since it's not an input but a tab switch
+            valueJSON.extrasMode = conf.ext.controls.extrasMode.filter((elem) => {
+                return conf.shadowDOM.root.querySelector(elem.containerSel).style.display == 'none' ? false : true
+            })[0].name;
+            valueJSON.extrasResizeMode = conf.ext.controls.extrasResizeMode.filter((elem) => {
+                return conf.shadowDOM.root.querySelector(elem.containerSel).style.display == 'none' ? false : true
+            })[0].name;
+        }
+        if(type == 'i2i') { // Needs special saving since it's not an input but a tab switch
+            valueJSON.i2iMode = conf.i2i.controls.i2iMode.filter((elem) => {
+                return conf.shadowDOM.root.querySelector(elem.containerSel).style.display == 'none' ? false : true
+            })[0].name;
+        }
+
         for (let prop in conf[type]) {
             if(prop !== 'controls') {
                 try {
@@ -1271,16 +1271,7 @@
                 }
             }
         }
-        if(type == 'ext') { // Needs special saving since it's not an input but a tab switch
-            let scaleByVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleByContainerSel).style.display == 'none' ? false : true;
-            //let scaleToVisble = conf.shadowDOM.root.querySelector(conf.ext.controls.extrasResizeMode.scaleToContainerSel).style.display == 'none' ? false : true;
-            valueJSON.extrasResizeMode = scaleByVisble ? 1 : 2;
-        }
-        if(type == 'i2i') { // Needs special saving since it's not an input but a tab switch
-            let i2iVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.i2iContainerSel).style.display == 'none' ? false : true;
-            //let inpaintVisble = conf.shadowDOM.root.querySelector(conf.i2i.controls.i2iMode.inpaintContainerSel).style.display == 'none' ? false : true;
-            valueJSON.i2iMode = i2iVisble ? 1 : 2;
-        }
+
         valueJSON.sdModelCheckpoint = conf.commonData.sdModelCheckpoint.el.value;
         return JSON.stringify(valueJSON);
     }
@@ -1295,15 +1286,16 @@
 
         if(conf.commonData.activeType != inputJSONObject.type) await switchTabAndWait(inputJSONObject.type); // Switch tab?
 
-        if(inputJSONObject.extrasResizeMode) await switchExtrasResizeModeTabAndWait(inputJSONObject.extrasResizeMode); // Needs special loading since it's not an input but a tab switch
+        if(inputJSONObject.extrasResizeMode) await switchTabAndWaitUntilSwitched(inputJSONObject.extrasResizeMode, conf.ext.controls.extrasResizeMode); // Needs special loading since it's not an input but a tab switch
+        if(inputJSONObject.extrasMode) await switchTabAndWaitUntilSwitched(inputJSONObject.extrasMode, conf.ext.controls.extrasMode); // Needs special loading since it's not an input but a tab switch
 
-        if(inputJSONObject.i2iMode) await switchI2IModeTabAndWait(inputJSONObject.i2iMode); // Needs special loading since it's not an input but a tab switch
+        if(inputJSONObject.i2iMode) await switchTabAndWaitUntilSwitched(inputJSONObject.i2iMode, conf.i2i.controls.i2iMode); // Needs special loading since it's not an input but a tab switch
 
         let loadOutput = 'loadJson: loaded: ';
 
         for (let prop in inputJSONObject) {
             let triggerOnBaseElem = true;
-            if(['type','extrasResizeMode','sdModelCheckpoint', 'i2iMode'].includes(prop)) continue;
+            if(['type','extrasMode','extrasResizeMode','sdModelCheckpoint', 'i2iMode'].includes(prop)) continue;
             try {
                 if(oldData[prop] != inputJSONObject[prop]) loadOutput += `${prop}:${oldData[prop]}-->${inputJSONObject[prop]} | `;
 
