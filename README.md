@@ -49,7 +49,7 @@ This text field is where you can add your own script that gets executed after th
 	conf.ui.addToQueueButton.style.position = 'unset';
 	conf.ui.addToQueueButton.style.opacity = '1';
 	```
-*Feel free to share more in the discussions tab*
+*Feel free to share more in the discussions tab (note that scripts has some security risks so some care should be taken when adding scripts)*
 
 
 # Troubleshooting

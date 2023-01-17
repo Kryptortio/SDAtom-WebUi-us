@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.1
+// @version      1.0.2
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -678,7 +678,7 @@
         let itemJSON =document.createElement('input');
         itemJSON.classList = 'AWQ-item-JSON';
         itemJSON.value = p_value || getValueJSON(p_type);
-        itemJSON.style.width = "calc(100vw - 245px)";
+        itemJSON.style.width = "calc(100vw - 275px)";
         itemJSON.style.height = "18px";
         itemJSON.onchange = function() {
             updateQueueState;
@@ -709,8 +709,9 @@
             if(tar.previousSibling) {
                 tar.parentNode.insertBefore(tar, tar.previousSibling);
                 awqLogPublishMsg(`Rearranged queue`);
+                updateQueueState();
             }
-            updateQueueState();
+            
         };
         let moveItemDown =document.createElement('button');
         moveItemDown.innerHTML = '⇩';
@@ -722,8 +723,34 @@
             if(tar.nextSibling) {
                 tar.parentNode.insertBefore(tar.nextSibling, tar);
                 awqLogPublishMsg(`Rearranged queue`);
+                updateQueueState();
             }
-            updateQueueState();
+        };
+        let moveItemBottom =document.createElement('button');
+        moveItemBottom.innerHTML = '⤓';
+        moveItemBottom.style.height = c_uiElemntHeight;
+        moveItemBottom.style.cursor = "pointer";
+        moveItemBottom.title = "Move this item to the bottom of the queue";
+        moveItemBottom.onclick = function() {
+            let tar = this.parentNode;
+            if(tar.parentNode.lastChild !== tar) {
+                tar.parentNode.appendChild(tar);
+                updateQueueState();
+            }
+        };
+        let moveItemTop =document.createElement('button');
+        moveItemTop.innerHTML = '⤒';
+        moveItemTop.style.height = c_uiElemntHeight;
+        moveItemTop.style.cursor = "pointer";
+        moveItemTop.title = "Move this item to the top of the queue";
+        moveItemTop.onclick = function() {
+            let tar = this.parentNode;
+            let parentFirstChild = tar.parentNode.firstChild;
+            if(parentFirstChild && parentFirstChild !== tar) {
+                tar.parentNode.insertBefore(tar, parentFirstChild);
+                awqLogPublishMsg(`Rearranged queue`);
+                updateQueueState();
+            }
         };
         let loadItem =document.createElement('button');
         loadItem.innerHTML = 'Load';
@@ -738,6 +765,8 @@
         queueItem.appendChild(removeItem);
         queueItem.appendChild(moveItemUp);
         queueItem.appendChild(moveItemDown);
+        queueItem.appendChild(moveItemBottom);
+        queueItem.appendChild(moveItemTop);
         queueItem.appendChild(loadItem);
         queueItem.appendChild(itemType);
         queueItem.appendChild(itemQuantity);
