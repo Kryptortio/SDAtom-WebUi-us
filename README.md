@@ -35,6 +35,23 @@ Example pattern filters:
 * `{"desc":"Add the prefix banana to all prompt","pattern":"^","replace":"banana, ","flags":"g"}`
 * `{"desc":"Add the postfix banana to all prompt","pattern":"$","replace":", banana","flags":"g"}`
 
+*Feel free to share more in the discussions tab*
+
+## Script extensions
+
+This text field is where you can add your own script that gets executed after the ui has loaded. This can be used to make your own changes to the script without having to modify the script itself (and having to do it each time you update the script). Some examples of what you could add to the box (several are possible separated with ; and a new line):
+
+* Make the add to queue button orange `conf.ui.addToQueueButton.style.background = '#CE6400';`
+* Make the add to queue button text white `conf.ui.addToQueueButton.style.color = 'white';`
+* Move the add to queue button inside the main ui and remove the opacity
+	```
+	conf.shadowDOM.root.querySelector('#quicksettings').appendChild(conf.ui.addToQueueButton);
+	conf.ui.addToQueueButton.style.position = 'unset';
+	conf.ui.addToQueueButton.style.opacity = '1';
+	```
+*Feel free to share more in the discussions tab*
+
+
 # Troubleshooting
 
 Steps to try to fix issues
@@ -54,7 +71,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working ([82725f0ac439f7e3b67858d55900e95330bbd326](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/82725f0ac439f7e3b67858d55900e95330bbd326))
+Latest commit (version of AUTOMATIC1111) confirmed to be working ([38b7186e6e3a4dffc93225308b822f0dae43a47d](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/38b7186e6e3a4dffc93225308b822f0dae43a47d))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported

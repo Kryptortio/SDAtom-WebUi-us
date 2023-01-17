@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.0
+// @version      1.0.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -228,6 +228,7 @@
         autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true),
         verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
         promptFilter: JSON.parse(localStorage.awqPromptFilter || '[]'),
+        extensionScript: localStorage.awqExtensionScript || '',
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
@@ -306,6 +307,8 @@
         conf.commonData.versionContainer.el = conf.shadowDOM.root.querySelector('#footer .versions');
 
         generateMainUI();
+
+        try { eval(conf.extensionScript);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
 
         conf.shadowDOM.root.querySelector('.min-h-screen').style.cssText = 'min-height:unset !important;';
 
@@ -598,6 +601,19 @@
         verboseOutputConsole.checked = conf.verboseLog;
         container.appendChild(verboseOutputConsole);
 
+        let extensionScript = document.createElement('textarea');
+        extensionScript.style.height = c_uiElemntHeightSmall;
+        extensionScript.style.padding = '1px';
+        extensionScript.style.border = '1px';
+        extensionScript.style.margin = '0';
+        extensionScript.placeholder = "Script extensions";
+        extensionScript.title = "Put scripts here to be executed after the main ui has been created";
+        extensionScript.value = conf.extensionScript;
+        extensionScript.onchange = function() {
+                    localStorage.awqExtensionScript = extensionScript.value;
+        }
+        container.appendChild(extensionScript);
+
         conf.ui.addToQueueButton = addToQueueButton;
         conf.ui.queueContainer = queueContainer;
         conf.ui.clearButton = clearButton;
@@ -611,6 +627,8 @@
         conf.ui.outputConsole = outputConsole;
         conf.ui.promptFilter = promptFilter;
         conf.ui.promptFilterNeg = promptFilterNeg;
+        conf.ui.promptFilterNeg = promptFilterNeg;
+
 
 
         refreshSettings();
@@ -1140,6 +1158,7 @@
             maxOutputLines:conf.maxOutputLines,
             autoscrollOutput:conf.autoscrollOutput,
             promptFilter:conf.promptFilter,
+            extensionScript:conf.extensionScript,
         });
         let importJSON = conf.ui.importExportData.value;
 
@@ -1166,6 +1185,7 @@
             conf.maxOutputLines = parsedImportJSON.maxOutputLines;
             conf.autoscrollOutput = parsedImportJSON.autoscrollOutput;
             conf.promptFilter = parsedImportJSON.promptFilter;
+            conf.extensionScript = parsedImportJSON.extensionScript;
             localStorage.awqNotificationSound = parsedImportJSON.awqNotificationSound;
             localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
@@ -1173,6 +1193,7 @@
             localStorage.awqMaxOutputLines = conf.maxOutputLines;
             localStorage.awqAutoscrollOutput = conf.autoscrollOutput ? 1 : 0;
             localStorage.awqPromptFilter = JSON.stringify(conf.promptFilter);
+            localStorage.awqextensionScript = conf.extensionScript;
             location.reload();
         }
     }
