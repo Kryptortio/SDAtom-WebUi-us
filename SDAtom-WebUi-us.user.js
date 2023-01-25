@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.2
+// @version      1.0.3
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -73,13 +73,16 @@
             scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
 
-            scriptXYXtype:{sel:"#script_txt2txt_xy_plot_x_type select"},
-            scriptXYYtype:{sel:"#script_txt2txt_xy_plot_y_type select"},
-            scriptXYXVals:{sel:"#script_txt2txt_xy_plot_x_values textarea"},
-            scriptXYYVals:{sel:"#script_txt2txt_xy_plot_y_values textarea"},
-            scriptXYDrawLeg:{sel:"#script_txt2txt_xy_plot_draw_legend input"},
-            scriptXYIncludeSep:{sel:"#script_txt2txt_xy_plot_include_lone_images input"},
-            scriptXYKeepMOne:{sel:"#script_txt2txt_xy_plot_no_fixed_seeds input"},
+            scriptXYZXtype:{sel:"#script_txt2txt_xyz_plot_x_type select"},
+            scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
+            scriptXYZYtype:{sel:"#script_txt2txt_xyz_plot_y_type select"},
+            scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
+            scriptXYZZtype:{sel:"#script_img2img_xyz_plot_z_type select"},
+            scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
+            scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
+            scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
+            scriptXYZIncludeSubGrid:{sel:"#script_img2img_xyz_plot_include_sub_grids input"},
+            scriptXYZKeepMOne:{sel:"#script_txt2txt_xyz_plot_no_fixed_seeds input"},
         },
         i2i:{
             controls:{
@@ -140,13 +143,16 @@
             scriptPromptMatrixPutVar: {sel:"#script_img2img_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_img2img_prompt_matrix_different_seeds input"},
 
-            scriptXYXtype:{sel:"#script_img2img_xy_plot_x_type select"},
-            scriptXYYtype:{sel:"#script_img2img_xy_plot_y_type select"},
-            scriptXYXVals:{sel:"#script_img2img_xy_plot_x_values textarea"},
-            scriptXYYVals:{sel:"#script_img2img_xy_plot_y_values textarea"},
-            scriptXYDrawLeg:{sel:"#script_img2img_xy_plot_draw_legend input"},
-            scriptXYIncludeSep:{sel:"#script_img2img_xy_plot_include_lone_images input"},
-            scriptXYKeepMOne:{sel:"#script_img2img_xy_plot_no_fixed_seeds input"},
+            scriptXYZXtype:{sel:"#script_img2img_xyz_plot_x_type select"},
+            scriptXYZXVals:{sel:"#script_img2img_xyz_plot_x_values textarea"},
+            scriptXYZYtype:{sel:"#script_img2img_xyz_plot_y_type select"},
+            scriptXYZYVals:{sel:"#script_img2img_xyz_plot_y_values textarea"},
+            scriptXYZZtype:{sel:"#script_img2img_xyz_plot_z_type select"},
+            scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
+            scriptXYZDrawLeg:{sel:"#script_img2img_xyz_plot_draw_legend input"},
+            scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
+            scriptXYZIncludeSubGrid:{sel:"#script_img2img_xyz_plot_include_sub_grids input"},
+            scriptXYZKeepMOne:{sel:"#script_img2img_xyz_plot_no_fixed_seeds input"},
 
             scripti2iAltTestOverrideSampM:{sel:"#script_img2img_alternative_test_override_sampler input"},
             scripti2iAltTestOverrideProm:{sel:"#script_img2img_alternative_test_override_prompt input"},
@@ -211,13 +217,13 @@
             batchDirOutput:{sel:"#extras_batch_output_dir textarea"},
             batchDirShowImg:{sel:"#extras_show_extras_results input"},
 
-            upscaler1:{sel:"#extras_upscaler_1"},
-            upscaler2:{sel:"#extras_upscaler_2"},
+            upscaler1:{sel:"#extras_upscaler_1 select"},
+            upscaler2:{sel:"#extras_upscaler_2 select"},
             upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#extras_upscaler_2_visibility [id^=range_id]"},
             GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
             CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
             CodeFormWeight:{sel:"#extras_codeformer_weight input",sel2:"#extras_codeformer_weight [id^=range_id]"},
-            UpsBeforeFace:{sel:"#extras_upscale_before_face_fix input"},
+ 
 
         },
         ui:{},

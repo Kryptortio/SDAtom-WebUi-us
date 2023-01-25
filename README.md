@@ -61,6 +61,7 @@ Steps to try to fix issues
 	* To update AUTOMATIC1111 Stable Diffusion web UI you run the command `git pull origin master` in the same folder as webui.bat. Optionall you can note what version you have now first if you want the option to try going back later, to do that the command is `git rev-parse HEAD`
 * Check the [Limitations section](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations) to see if your version matches the commit listed there, so that you haven't updated to a new version that is not yet supported. Newer versions of AUTOMATIC1111 might work fine but sometimes they change something that breaks the script.
 	* If you want to try to go to a specific version of AUTOMATIC1111 you can use the command `git checkout ` followed by the id you want to use (e.g. the one listed under [limitations](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations))
+* When updating the script your old queue entries might not work fully anymore (if the gui has changed). Then you need to load the entry manually and check that every setting gets loaded, manually set any that won't load anymore and then readd it to the queue.
 
 Steps to try to find the cause of issues
 
@@ -71,7 +72,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working ([38b7186e6e3a4dffc93225308b822f0dae43a47d](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/38b7186e6e3a4dffc93225308b822f0dae43a47d))
+Latest commit (version of AUTOMATIC1111) confirmed to be working ([15e89ef0f6f22f823c19592a401b9e4ee477258c](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/15e89ef0f6f22f823c19592a401b9e4ee477258c))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
