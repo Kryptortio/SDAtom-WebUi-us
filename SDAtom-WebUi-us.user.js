@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.3
+// @version      1.0.4
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -77,12 +77,13 @@
             scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
             scriptXYZYtype:{sel:"#script_txt2txt_xyz_plot_y_type select"},
             scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{sel:"#script_img2img_xyz_plot_z_type select"},
-            scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
+            scriptXYZZtype:{sel:"#script_txt2txt_xyz_plot_z_type select"},
+            scriptXYZZVals:{sel:"#script_txt2txt_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
-            scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
-            scriptXYZIncludeSubGrid:{sel:"#script_img2img_xyz_plot_include_sub_grids input"},
+            scriptXYZIncludeSubImg:{sel:"#script_txt2txt_xyz_plot_include_lone_images input"},
+            scriptXYZIncludeSubGrid:{sel:"#script_txt2txt_xyz_plot_include_sub_grids input"},
             scriptXYZKeepMOne:{sel:"#script_txt2txt_xyz_plot_no_fixed_seeds input"},
+            scriptXYZGridMargin: {sel:"#script_txt2txt_xyz_plot_margin_size [id^=range_id]",sel2:"#script_txt2txt_xyz_plot_margin_size input"},
         },
         i2i:{
             controls:{
@@ -153,6 +154,7 @@
             scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
             scriptXYZIncludeSubGrid:{sel:"#script_img2img_xyz_plot_include_sub_grids input"},
             scriptXYZKeepMOne:{sel:"#script_img2img_xyz_plot_no_fixed_seeds input"},
+            scriptXYZGridMargin: {sel:"#script_img2img_xyz_plot_margin_size [id^=range_id]",sel2:"#script_img2img_xyz_plot_margin_size input"},
 
             scripti2iAltTestOverrideSampM:{sel:"#script_img2img_alternative_test_override_sampler input"},
             scripti2iAltTestOverrideProm:{sel:"#script_img2img_alternative_test_override_prompt input"},

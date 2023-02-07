@@ -72,7 +72,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working ([15e89ef0f6f22f823c19592a401b9e4ee477258c](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/15e89ef0f6f22f823c19592a401b9e4ee477258c))
+Latest commit (version of AUTOMATIC1111) confirmed to be working ([ea9bd9fc7409109adcd61b897abc2c8881161256](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/ea9bd9fc7409109adcd61b897abc2c8881161256))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
