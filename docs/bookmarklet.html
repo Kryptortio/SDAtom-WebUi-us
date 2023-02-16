@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<h1>Run the script (<a href="https://github.com/Kryptortio/SDAtom-WebUi-us">SDAtom-WebUi-us</a>) without installing</h1>
+		<p style="font-size:2rem">
+			To do this we will use a <a href="https://en.wikipedia.org/wiki/Bookmarklet">bookmarklet</a>. To run the script drag 👉 <a href="javascript:(function (){document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).src='http://cdn.jsdelivr.net/gh/Kryptortio/SDAtom-WebUi-us/SDAtom-WebUi-us.user.js?'+(new Date()).getTime();}());">this link</a> 👈 to your bookmarks then click it while you have your <a href="http://127.0.0.1:7860/">webui ((http://127.0.0.1:7860/))</a> open in your browser. This will run the script but if you reload the page you will have to click the bookmark again. If it doesn't work right click the bookmark and click edit/properties and make sure the url contains the following:
+			<pre style="border: 1px solid gray; padding: 5px;">
+javascript:(function (){document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).src='http://cdn.jsdelivr.net/gh/Kryptortio/SDAtom-WebUi-us/SDAtom-WebUi-us.user.js?'+(new Date()).getTime();}());
+			</pre>
+		</p>
+		<p style="font-size:2rem">
+			It's also possible to manually <a href="https://github.com/Kryptortio/SDAtom-WebUi-us/raw/main/SDAtom-WebUi-us.user.js">open the script</a> copying the content and pasting it in your developer console (press F12 then go to Console paste and press enter). This must also be done while you have the <a href="http://127.0.0.1:7860/">webui ((http://127.0.0.1:7860/))</a> open in your browser.
+		</p>		
+		<a href="https://github.com/Kryptortio/SDAtom-WebUi-us">Back to Github repo</a>
+	</body>
+</html>
