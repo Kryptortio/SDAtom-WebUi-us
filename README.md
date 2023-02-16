@@ -6,7 +6,9 @@ This is a [user script](https://en.wikipedia.org/wiki/Userscript) that adds a pr
 
 # Installation
 
-To install the script I recommend installing an addon where you that let's you add user scripts 
+[Run script without installing](https://kryptortio.github.io/SDAtom-WebUi-us/bookmarklet.html)
+
+To install the script **I recommend installing an addon** where you that let's you add user scripts 
 
 * Tampermonkey [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
 * Greasemonkey [Firefox](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)
@@ -72,7 +74,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working ([ea9bd9fc7409109adcd61b897abc2c8881161256](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/ea9bd9fc7409109adcd61b897abc2c8881161256))
+Latest commit (version of AUTOMATIC1111) confirmed to be working ([3715ece0adce7bf7c5e9c5ab3710b2fdc3848f39](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/3715ece0adce7bf7c5e9c5ab3710b2fdc3848f39))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported

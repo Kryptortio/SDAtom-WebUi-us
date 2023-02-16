@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.4
+// @version      1.0.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -253,8 +253,10 @@
     const c_wait_tick_duration = 200;
 
     // ----------------------------------------------------------------------------- Logging
+    const c_scriptVersion = typeof GM_info == 'undefined' ? new Date().toUTCString() : GM_info.script.version;
+    const c_scriptHandeler = typeof GM_info == 'undefined' ? 'bookmarklet?' : GM_info.scriptHandler;
 
-    console.log(`Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent}`);
+    console.log(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);
     function awqLog(p_message) {
         if(conf.verboseLog) {
             awqLogPublishMsg(p_message, 'lightgray');
@@ -264,7 +266,7 @@
         if(!conf.ui.outputConsole) return;
         if(conf.ui.outputConsole.innerHTML.match('console-description')) {
             let ASDWUIVerText = '<span style="font-size: 0.9em;">' + conf.commonData.versionContainer.el.textContent + '</span>';
-            conf.ui.outputConsole.innerHTML = `* Running SDAtom-WebUi-us version ${GM_info.script.version} using ${GM_info.scriptHandler} with browser ${window.navigator.userAgent} stable-diffusion-webui version ${ASDWUIVerText}`;
+            conf.ui.outputConsole.innerHTML = `* Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent} stable-diffusion-webui version ${ASDWUIVerText}`;
         }
         let lines = conf.ui.outputConsole.querySelectorAll('div');
         let line = document.createElement('div');
