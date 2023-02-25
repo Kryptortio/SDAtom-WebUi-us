@@ -254,7 +254,7 @@
 
     // ----------------------------------------------------------------------------- Logging
     const c_scriptVersion = typeof GM_info == 'undefined' ? new Date().toUTCString() : GM_info.script.version;
-    const c_scriptHandeler = typeof GM_info == 'undefined' ? 'bookmarklet?' : GM_info.scriptHandler;
+    const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not a user script)' : GM_info.scriptHandler;
 
     console.log(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);
     function awqLog(p_message) {

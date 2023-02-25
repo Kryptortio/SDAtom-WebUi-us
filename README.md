@@ -6,9 +6,11 @@ This is a [user script](https://en.wikipedia.org/wiki/Userscript) that adds a pr
 
 # Installation
 
-[Run script without installing](https://kryptortio.github.io/SDAtom-WebUi-us/bookmarklet.html)
+1. [Install as an WebUi extension](https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext#installation), Open the webui and go to the **Extensions** tab, then **Install from URL** and enter the url to the extension repo (https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext) and then click install.
 
-To install the script **I recommend installing an addon** where you that let's you add user scripts 
+2. [Run script without installing](https://kryptortio.github.io/SDAtom-WebUi-us/bookmarklet.html)
+
+3. To install the user script **I recommend installing an addon** where you that let's you add user scripts 
 
 * Tampermonkey [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
 * Greasemonkey [Firefox](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)
@@ -74,7 +76,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working ([3715ece0adce7bf7c5e9c5ab3710b2fdc3848f39](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/3715ece0adce7bf7c5e9c5ab3710b2fdc3848f39))
+Latest commit (version of AUTOMATIC1111) confirmed to be working ([0cc0ee1bcb4c24a8c9715f66cede06601bfc00c8](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/0cc0ee1bcb4c24a8c9715f66cede06601bfc00c8))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
