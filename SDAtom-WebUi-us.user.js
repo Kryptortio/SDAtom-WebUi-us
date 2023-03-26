@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.1.5
+// @version      1.1.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -20,8 +20,7 @@
             t2iContainer:{sel:"#tab_txt2img"},
             i2iContainer:{sel:"#tab_img2img"},
             extContainer:{sel:"#tab_extras"},
-            sdModelCheckpointContainer:{sel:"#setting_sd_model_checkpoint"},
-            sdModelCheckpoint:{sel:"#setting_sd_model_checkpoint input"},
+            sdModelCheckpoint:{grad:"setting_sd_model_checkpoint"},
             versionContainer:{sel:"#footer .versions"},
 
             working:false,
@@ -39,7 +38,7 @@
             negPrompt: {sel:"#txt2img_neg_prompt textarea"},
 
             sample: {sel:"#txt2img_steps [id^=range_id]",sel2:"#txt2img_steps input"},
-            sampleMethod: {grad:"txt2img_sampling", sel:"#txt2img_sampling span.single-select"},
+            sampleMethod: {grad:"txt2img_sampling"},
 
             width:  {sel:"#txt2img_width [id^=range_id]",sel2:"#txt2img_width input"},
             height: {sel:"#txt2img_height [id^=range_id]",sel2:"#txt2img_height input"},
@@ -48,7 +47,7 @@
             tiling: {sel:"#txt2img_tiling input"},
 
             highresFix: {sel:"#txt2img_enable_hr input"},
-            hrFixUpscaler: {grad:"txt2img_hr_upscaler", sel:"#txt2img_hr_upscaler span.single-select"},
+            hrFixUpscaler: {grad:"txt2img_hr_upscaler"},
             hrFixSteps: {sel:"#txt2img_hires_steps [id^=range_id]",sel2:"#txt2img_hires_steps input"},
             hrFixdenoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
             hrFixUpscaleBy: {sel:"#txt2img_hr_scale [id^=range_id]",sel2:"#txt2img_hr_scale input"},
@@ -68,16 +67,16 @@
             varRSFWidth: {sel:"#txt2img_seed_resize_from_w [id^=range_id]",sel2:"#txt2img_seed_resize_from_w input"},
             varRSFHeight: {sel:"#txt2img_seed_resize_from_h [id^=range_id]",sel2:"#txt2img_seed_resize_from_h input"},
 
-            script: {grad:"script_list",gradIndex:0, sel:"#tab_txt2img #script_list span.single-select"},
+            script: {grad:"script_list",gradIndex:0},
 
             scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type", sel:"#script_txt2txt_xyz_plot_x_type span.single-select"},
+            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type"},
             scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type", sel:"#script_txt2txt_xyz_plot_y_type span.single-select"},
+            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type"},
             scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type", sel:"#script_txt2txt_xyz_plot_z_type span.single-select"},
+            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type"},
             scriptXYZZVals:{sel:"#script_txt2txt_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_txt2txt_xyz_plot_include_lone_images input"},
@@ -116,7 +115,7 @@
             i2iBatchOutputDir: {sel:"#img2img_batch_output_dir textarea"},
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
-            sampleMethod: {grad:"img2img_sampling", sel:"#img2img_sampling span.single-select"},
+            sampleMethod: {grad:"img2img_sampling"},
 
             width:  {sel:"#img2img_width [id^=range_id]",sel2:"#img2img_width input"},
             height: {sel:"#img2img_height [id^=range_id]",sel2:"#img2img_height input"},
@@ -139,16 +138,16 @@
             varRSFWidth: {sel:"#img2img_seed_resize_from_w input",sel2:"#img2img_seed_resize_from_w [id^=range_id]"},
             varRSFHeight: {sel:"#img2img_seed_resize_from_h input",sel2:"#img2img_seed_resize_from_h [id^=range_id]"},
 
-            script: {grad:"script_list",gradIndex:1, sel:"#tab_img2img #script_list span.single-select"},
+            script: {grad:"script_list",gradIndex:1},
 
             scriptPromptMatrixPutVar: {sel:"#script_img2img_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_img2img_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{grad:"script_img2img_xyz_plot_x_type", sel:"#script_img2img_xyz_plot_x_type span.single-select"},
+            scriptXYZXtype:{grad:"script_img2img_xyz_plot_x_type"},
             scriptXYZXVals:{sel:"#script_img2img_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{grad:"script_img2img_xyz_plot_y_type", sel:"#script_img2img_xyz_plot_y_type span.single-select"},
+            scriptXYZYtype:{grad:"script_img2img_xyz_plot_y_type"},
             scriptXYZYVals:{sel:"#script_img2img_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{grad:"script_img2img_xyz_plot_z_type", sel:"#script_img2img_xyz_plot_z_type span.single-select"},
+            scriptXYZZtype:{grad:"script_img2img_xyz_plot_z_type"},
             scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_img2img_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
@@ -221,8 +220,8 @@
             batchDirOutput:{sel:"#extras_batch_output_dir textarea"},
             batchDirShowImg:{sel:"#extras_show_extras_results input"},
 
-            upscaler1:{grad:"extras_upscaler_1", sel:"#extras_upscaler_1 span.single-select"},
-            upscaler2:{grad:"extras_upscaler_2", sel:"#extras_upscaler_2 span.single-select"},
+            upscaler1:{grad:"extras_upscaler_1"},
+            upscaler2:{grad:"extras_upscaler_2"},
             upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#extras_upscaler_2_visibility [id^=range_id]"},
             GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
             CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
@@ -1127,29 +1126,10 @@
         });
     }
 
-    function switchModelAndWait(p_target_model) {
-        awqLog('switchModelAndWait:' + p_target_model);
-        let selectElem = conf.commonData.sdModelCheckpoint.el;
-        let selectElemContainer = conf.commonData.sdModelCheckpointContainer.el;
-        let oldValue = selectElem.value;
-
-        if(selectElem.value == p_target_model) return;
-
-        selectElem.value = p_target_model;
-        triggerChange(selectElem);
-        conf.commonData.waiting = true;
-        awqLogPublishMsg(`Waiting for ${p_target_model} to load`);
-
-        return new Promise(resolve => {
-            function modelSwitchedAndLoaded() { return selectElem.value == p_target_model && selectElemContainer.querySelector('.wrap div') == null} // Value changed and not loading
-            let waitForSwitchInterval = setInterval(function() {
-                if(!modelSwitchedAndLoaded()) return;
-                clearInterval(waitForSwitchInterval);
-                awqLogPublishMsg(`${p_target_model} has completed loading`);
-                conf.commonData.waiting = false;
-                resolve();
-            },c_wait_tick_duration);
-        });
+    function forceGradioUIUpdate() {
+        const someCheckboxInputSelector = '#txt2img_subseed_show input';
+        document.querySelector(someCheckboxInputSelector).click();
+        document.querySelector(someCheckboxInputSelector).click();
     }
 
     function webUICurrentyWorkingOn(p_itemType) {
@@ -1343,7 +1323,7 @@
             }
         }
 
-        valueJSON.sdModelCheckpoint = conf.commonData.sdModelCheckpoint.el.value;
+        valueJSON.sdModelCheckpoint = getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
         return JSON.stringify(valueJSON);
     }
     async function loadJson(p_json) {
@@ -1353,7 +1333,7 @@
         let waitForThisContainer;
         awqLog('loadJson: ' + type);
 
-        if(inputJSONObject.sdModelCheckpoint) await switchModelAndWait(inputJSONObject.sdModelCheckpoint); // Switch model?
+        setGradVal(conf.commonData.sdModelCheckpoint.gradEl, inputJSONObject.sdModelCheckpoint);
 
         if(conf.commonData.activeType != inputJSONObject.type) await switchTabAndWait(inputJSONObject.type); // Switch tab?
 
@@ -1381,9 +1361,6 @@
                     } else if(conf[type][prop].el.type == 'checkbox') {
                         if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Prevent checbox getting toggled
                         conf[type][prop].el.checked = inputJSONObject[prop];
-                    } else if(conf[type][prop].el.nodeName == 'SPAN') {
-                        triggerOnBaseElem = false;
-                        conf[type][prop].el.childNodes[0].nodeValue = inputJSONObject[prop];
                     } else { // Input, Textarea
                         if(conf[type][prop].el.value == inputJSONObject[prop]) triggerOnBaseElem = false; // Fixes svelte error
                         conf[type][prop].el.value = inputJSONObject[prop];
@@ -1404,7 +1381,7 @@
             }
         }
         awqLog(loadOutput.replace(/\|\s$/, ''));
-
+        forceGradioUIUpdate();
     }
 
     function triggerChange(p_elem) {
