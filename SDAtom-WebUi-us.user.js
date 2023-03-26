@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.0.5
+// @version      1.1.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -21,7 +21,7 @@
             i2iContainer:{sel:"#tab_img2img"},
             extContainer:{sel:"#tab_extras"},
             sdModelCheckpointContainer:{sel:"#setting_sd_model_checkpoint"},
-            sdModelCheckpoint:{sel:"#setting_sd_model_checkpoint select"},
+            sdModelCheckpoint:{sel:"#setting_sd_model_checkpoint input"},
             versionContainer:{sel:"#footer .versions"},
 
             working:false,
@@ -39,7 +39,7 @@
             negPrompt: {sel:"#txt2img_neg_prompt textarea"},
 
             sample: {sel:"#txt2img_steps [id^=range_id]",sel2:"#txt2img_steps input"},
-            sampleMethod: {sel:"#txt2img_sampling select"},
+            sampleMethod: {grad:"txt2img_sampling"},
 
             width:  {sel:"#txt2img_width [id^=range_id]",sel2:"#txt2img_width input"},
             height: {sel:"#txt2img_height [id^=range_id]",sel2:"#txt2img_height input"},
@@ -48,7 +48,7 @@
             tiling: {sel:"#txt2img_tiling input"},
 
             highresFix: {sel:"#txt2img_enable_hr input"},
-            hrFixUpscaler: {sel:"#txt2img_hr_upscaler select"},
+            hrFixUpscaler: {grad:"txt2img_hr_upscaler"},
             hrFixSteps: {sel:"#txt2img_hires_steps [id^=range_id]",sel2:"#txt2img_hires_steps input"},
             hrFixdenoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
             hrFixUpscaleBy: {sel:"#txt2img_hr_scale [id^=range_id]",sel2:"#txt2img_hr_scale input"},
@@ -68,16 +68,16 @@
             varRSFWidth: {sel:"#txt2img_seed_resize_from_w [id^=range_id]",sel2:"#txt2img_seed_resize_from_w input"},
             varRSFHeight: {sel:"#txt2img_seed_resize_from_h [id^=range_id]",sel2:"#txt2img_seed_resize_from_h input"},
 
-            script: {sel:"#txt2img_script_container select"},
+            script: {grad:"script_list",gradIndex:0},
 
             scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{sel:"#script_txt2txt_xyz_plot_x_type select"},
+            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type"},
             scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{sel:"#script_txt2txt_xyz_plot_y_type select"},
+            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type"},
             scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{sel:"#script_txt2txt_xyz_plot_z_type select"},
+            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type"},
             scriptXYZZVals:{sel:"#script_txt2txt_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_txt2txt_xyz_plot_include_lone_images input"},
@@ -116,7 +116,7 @@
             i2iBatchOutputDir: {sel:"#img2img_batch_output_dir textarea"},
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
-            sampleMethod: {sel:"#img2img_sampling select"},
+            sampleMethod: {grad:"img2img_sampling"},
 
             width:  {sel:"#img2img_width [id^=range_id]",sel2:"#img2img_width input"},
             height: {sel:"#img2img_height [id^=range_id]",sel2:"#img2img_height input"},
@@ -139,16 +139,16 @@
             varRSFWidth: {sel:"#img2img_seed_resize_from_w input",sel2:"#img2img_seed_resize_from_w [id^=range_id]"},
             varRSFHeight: {sel:"#img2img_seed_resize_from_h input",sel2:"#img2img_seed_resize_from_h [id^=range_id]"},
 
-            script: {sel:"#tab_img2img #script_list select"},
+            script: {grad:"script_list",gradIndex:1},
 
             scriptPromptMatrixPutVar: {sel:"#script_img2img_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_img2img_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{sel:"#script_img2img_xyz_plot_x_type select"},
+            scriptXYZXtype:{grad:"script_img2img_xyz_plot_x_type"},
             scriptXYZXVals:{sel:"#script_img2img_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{sel:"#script_img2img_xyz_plot_y_type select"},
+            scriptXYZYtype:{grad:"script_img2img_xyz_plot_y_type"},
             scriptXYZYVals:{sel:"#script_img2img_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{sel:"#script_img2img_xyz_plot_z_type select"},
+            scriptXYZZtype:{grad:"script_img2img_xyz_plot_z_type"},
             scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_img2img_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
@@ -168,7 +168,9 @@
             scripti2iAltTestSigma:{sel:"#script_img2img_alternative_test_sigma_adjustment input"},
 
             scriptLoopbackLoops:{sel:"#script_loopback_loops input",sel2:"#script_loopback_loops [id^=range_id]"},
-            scriptLoopbackDenoSCF:{sel:"#script_loopback_denoising_strength_change_factor input",sel2:"#script_loopback_denoising_strength_change_factor [id^=range_id]"},
+            scriptLoopbackDenoStr:{sel:"#script_loopback_final_denoising_strength input",sel2:"#script_loopback_final_denoising_strength [id^=range_id]"},
+            scriptLoopbackDenoStrCurve:{gradLab:"Denoising strength curve"},
+            scriptLoopbackAppend:{gradLab:"Append interrogated prompt at each iteration"},
 
             scriptOutPMK2Pixels:{sel:"#script_outpainting_mk2_pixels input",sel2:"#script_outpainting_mk2_pixels [id^=range_id]"},
             scriptOutPMK2MaskBlur:{sel:"#script_outpainting_mk2_mask_blur input",sel2:"#script_outpainting_mk2_mask_blur [id^=range_id]"},
@@ -219,8 +221,8 @@
             batchDirOutput:{sel:"#extras_batch_output_dir textarea"},
             batchDirShowImg:{sel:"#extras_show_extras_results input"},
 
-            upscaler1:{sel:"#extras_upscaler_1 select"},
-            upscaler2:{sel:"#extras_upscaler_2 select"},
+            upscaler1:{grad:"extras_upscaler_1"},
+            upscaler2:{grad:"extras_upscaler_2"},
             upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#extras_upscaler_2_visibility [id^=range_id]"},
             GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
             CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
@@ -254,7 +256,7 @@
 
     // ----------------------------------------------------------------------------- Logging
     const c_scriptVersion = typeof GM_info == 'undefined' ? new Date().toUTCString() : GM_info.script.version;
-    const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not a user script)' : GM_info.scriptHandler;
+    const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not user script)' : GM_info.scriptHandler;
 
     console.log(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);
     function awqLog(p_message) {
@@ -309,7 +311,7 @@
     // ----------------------------------------------------------------------------- Wait for content to load
     let waitForLoadInterval = setInterval(initAWQ, c_wait_tick_duration);
     function initAWQ() {
-        conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel).shadowRoot;
+        conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel);
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
         clearInterval(waitForLoadInterval);
         awqLog('initAWQ: Content loaded');
@@ -320,8 +322,6 @@
 
         try { eval(conf.extensionScript);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
 
-        conf.shadowDOM.root.querySelector('.min-h-screen').style.cssText = 'min-height:unset !important;';
-
         function mapElementsToConf(p_object, p_info) {
             for (let prop in p_object) {
                 if(p_object[prop].sel) {
@@ -331,6 +331,15 @@
                 if(p_object[prop].sel2) {
                     p_object[prop].el2 = conf.shadowDOM.root.querySelector(p_object[prop].sel2);
                     if(!p_object[prop].el2) awqLogPublishError(`Failed to find the secondary ${p_info} ${prop}`);
+                }
+                if(p_object[prop].grad) {
+                    let gradIndex = p_object[prop].gradIndex ? p_object[prop].gradIndex : 0;
+                    p_object[prop].gradEl = findGradioComponentState(p_object[prop].grad)[gradIndex];
+                    if(!p_object[prop].gradEl) awqLogPublishError(`Failed to find the gradio element ${p_info} ${prop}`);
+                }
+                if(p_object[prop].gradLab) {
+                    p_object[prop].gradEl = findGradioComponentStateByLabel(p_object[prop].gradLab)[0];
+                    if(!p_object[prop].gradEl) awqLogPublishError(`Failed to find the gradio element ${p_info} ${prop}`);
                 }
             }
         }
@@ -1317,7 +1326,9 @@
         for (let prop in conf[type]) {
             if(prop !== 'controls') {
                 try {
-                    if(conf[type][prop].el.type == 'fieldset') { // Radio buttons
+                    if(conf[type][prop].gradEl) {
+                        valueJSON[prop] = getGradVal(conf[type][prop].gradEl);
+                    } else if(conf[type][prop].el.type == 'fieldset') { // Radio buttons
                         valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
                     } else if(conf[type][prop].el.type == 'checkbox') {
                         valueJSON[prop] = conf[type][prop].el.checked;
@@ -1359,24 +1370,30 @@
             try {
                 if(oldData[prop] != inputJSONObject[prop]) loadOutput += `${prop}:${oldData[prop]}-->${inputJSONObject[prop]} | `;
 
-                if(conf[type][prop].el.type == 'fieldset') {
-                    triggerOnBaseElem = false; // No need to trigger this on base element
-                    conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
-                    triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
-                } else if(conf[type][prop].el.type == 'select-one') { // Select
-                    if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Not needed
-                    conf[type][prop].el.value = inputJSONObject[prop];
-                } else if(conf[type][prop].el.type == 'checkbox') {
-                    if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Prevent checbox getting toggled
-                    conf[type][prop].el.checked = inputJSONObject[prop];
-                } else { // Input, Textarea
-                    if(conf[type][prop].el.value == inputJSONObject[prop]) triggerOnBaseElem = false; // Fixes svelte error
-                    conf[type][prop].el.value = inputJSONObject[prop];
+                if(conf[type][prop].el) {
+                    if(conf[type][prop].el.type == 'fieldset') {
+                        triggerOnBaseElem = false; // No need to trigger this on base element
+                        conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
+                        triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
+                    } else if(conf[type][prop].el.type == 'select-one') { // Select
+                        if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Not needed
+                        conf[type][prop].el.value = inputJSONObject[prop];
+                    } else if(conf[type][prop].el.type == 'checkbox') {
+                        if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Prevent checbox getting toggled
+                        conf[type][prop].el.checked = inputJSONObject[prop];
+                    } else { // Input, Textarea
+                        if(conf[type][prop].el.value == inputJSONObject[prop]) triggerOnBaseElem = false; // Fixes svelte error
+                        conf[type][prop].el.value = inputJSONObject[prop];
+                    }
+                    if(conf[type][prop].el2) {
+                        let triggerForSel2 = conf[type][prop].sel2.value != inputJSONObject[prop];
+                        conf[type][prop].el2.value = inputJSONObject[prop];
+                        if(triggerForSel2) triggerChange(conf[type][prop].el2);
+                    }
                 }
-                if(conf[type][prop].el2) {
-                    let triggerForSel2 = conf[type][prop].sel2.value != inputJSONObject[prop];
-                    conf[type][prop].el2.value = inputJSONObject[prop];
-                    if(triggerForSel2) triggerChange(conf[type][prop].el2);
+                if(conf[type][prop].gradEl) {
+                    setGradVal(conf[type][prop].gradEl, inputJSONObject[prop]);
+                    triggerOnBaseElem = false;
                 }
                 if(triggerOnBaseElem) triggerChange(conf[type][prop].el);
             } catch(e) {
@@ -1396,4 +1413,20 @@
         p_elem.dispatchEvent(evt);
     }
 
+    function findGradioComponentState(p_elem_id) {
+awqLog('findGradioComponentState:'+p_elem_id);
+        return window.gradio_config.components.filter(comp => comp.props.elem_id == p_elem_id);
+    }
+    function findGradioComponentStateByLabel(p_elem_label) {
+awqLog('findGradioComponentState:'+p_elem_label);
+        return window.gradio_config.components.filter(comp => comp.props.label == p_elem_label);
+    }
+    function getGradVal(p_grad_comp) {
+awqLog('getGradVal:'+p_grad_comp);
+        return p_grad_comp.props.value;
+    }
+    function setGradVal(p_grad_comp,p_val) {
+awqLog('setGradVal:'+p_grad_comp+'->'+p_val);
+        p_grad_comp.props.value = p_val;
+    }
 })();
