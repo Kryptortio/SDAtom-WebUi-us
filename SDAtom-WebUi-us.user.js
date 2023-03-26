@@ -39,7 +39,7 @@
             negPrompt: {sel:"#txt2img_neg_prompt textarea"},
 
             sample: {sel:"#txt2img_steps [id^=range_id]",sel2:"#txt2img_steps input"},
-            sampleMethod: {grad:"txt2img_sampling"},
+            sampleMethod: {grad:"txt2img_sampling", sel:"#txt2img_sampling span.single-select"},
 
             width:  {sel:"#txt2img_width [id^=range_id]",sel2:"#txt2img_width input"},
             height: {sel:"#txt2img_height [id^=range_id]",sel2:"#txt2img_height input"},
@@ -48,7 +48,7 @@
             tiling: {sel:"#txt2img_tiling input"},
 
             highresFix: {sel:"#txt2img_enable_hr input"},
-            hrFixUpscaler: {grad:"txt2img_hr_upscaler"},
+            hrFixUpscaler: {grad:"txt2img_hr_upscaler", sel:"#txt2img_hr_upscaler span.single-select"},
             hrFixSteps: {sel:"#txt2img_hires_steps [id^=range_id]",sel2:"#txt2img_hires_steps input"},
             hrFixdenoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
             hrFixUpscaleBy: {sel:"#txt2img_hr_scale [id^=range_id]",sel2:"#txt2img_hr_scale input"},
@@ -68,16 +68,16 @@
             varRSFWidth: {sel:"#txt2img_seed_resize_from_w [id^=range_id]",sel2:"#txt2img_seed_resize_from_w input"},
             varRSFHeight: {sel:"#txt2img_seed_resize_from_h [id^=range_id]",sel2:"#txt2img_seed_resize_from_h input"},
 
-            script: {grad:"script_list",gradIndex:0},
+            script: {grad:"script_list",gradIndex:0, sel:"#tab_txt2img #script_list span.single-select"},
 
             scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type"},
+            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type", sel:"#script_txt2txt_xyz_plot_x_type span.single-select"},
             scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type"},
+            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type", sel:"#script_txt2txt_xyz_plot_y_type span.single-select"},
             scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type"},
+            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type", sel:"#script_txt2txt_xyz_plot_z_type span.single-select"},
             scriptXYZZVals:{sel:"#script_txt2txt_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_txt2txt_xyz_plot_include_lone_images input"},
@@ -116,7 +116,7 @@
             i2iBatchOutputDir: {sel:"#img2img_batch_output_dir textarea"},
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
-            sampleMethod: {grad:"img2img_sampling"},
+            sampleMethod: {grad:"img2img_sampling", sel:"#img2img_sampling span.single-select"},
 
             width:  {sel:"#img2img_width [id^=range_id]",sel2:"#img2img_width input"},
             height: {sel:"#img2img_height [id^=range_id]",sel2:"#img2img_height input"},
@@ -139,16 +139,16 @@
             varRSFWidth: {sel:"#img2img_seed_resize_from_w input",sel2:"#img2img_seed_resize_from_w [id^=range_id]"},
             varRSFHeight: {sel:"#img2img_seed_resize_from_h input",sel2:"#img2img_seed_resize_from_h [id^=range_id]"},
 
-            script: {grad:"script_list",gradIndex:1},
+            script: {grad:"script_list",gradIndex:1, sel:"#tab_img2img #script_list span.single-select"},
 
             scriptPromptMatrixPutVar: {sel:"#script_img2img_prompt_matrix_put_at_start input"},
             scriptPromptMatrixUseDiff: {sel:"#script_img2img_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{grad:"script_img2img_xyz_plot_x_type"},
+            scriptXYZXtype:{grad:"script_img2img_xyz_plot_x_type", sel:"#script_img2img_xyz_plot_x_type span.single-select"},
             scriptXYZXVals:{sel:"#script_img2img_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{grad:"script_img2img_xyz_plot_y_type"},
+            scriptXYZYtype:{grad:"script_img2img_xyz_plot_y_type", sel:"#script_img2img_xyz_plot_y_type span.single-select"},
             scriptXYZYVals:{sel:"#script_img2img_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{grad:"script_img2img_xyz_plot_z_type"},
+            scriptXYZZtype:{grad:"script_img2img_xyz_plot_z_type", sel:"#script_img2img_xyz_plot_z_type span.single-select"},
             scriptXYZZVals:{sel:"#script_img2img_xyz_plot_z_values textarea"},
             scriptXYZDrawLeg:{sel:"#script_img2img_xyz_plot_draw_legend input"},
             scriptXYZIncludeSubImg:{sel:"#script_img2img_xyz_plot_include_lone_images input"},
@@ -221,8 +221,8 @@
             batchDirOutput:{sel:"#extras_batch_output_dir textarea"},
             batchDirShowImg:{sel:"#extras_show_extras_results input"},
 
-            upscaler1:{grad:"extras_upscaler_1"},
-            upscaler2:{grad:"extras_upscaler_2"},
+            upscaler1:{grad:"extras_upscaler_1", sel:"#extras_upscaler_1 span.single-select"},
+            upscaler2:{grad:"extras_upscaler_2", sel:"#extras_upscaler_2 span.single-select"},
             upscale2Vis:{sel:"#extras_upscaler_2_visibility input",sel2:"#extras_upscaler_2_visibility [id^=range_id]"},
             GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
             CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
@@ -1381,6 +1381,9 @@
                     } else if(conf[type][prop].el.type == 'checkbox') {
                         if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Prevent checbox getting toggled
                         conf[type][prop].el.checked = inputJSONObject[prop];
+                    } else if(conf[type][prop].el.nodeName == 'SPAN') {
+                        triggerOnBaseElem = false;
+                        conf[type][prop].el.childNodes[0].nodeValue = inputJSONObject[prop];
                     } else { // Input, Textarea
                         if(conf[type][prop].el.value == inputJSONObject[prop]) triggerOnBaseElem = false; // Fixes svelte error
                         conf[type][prop].el.value = inputJSONObject[prop];
