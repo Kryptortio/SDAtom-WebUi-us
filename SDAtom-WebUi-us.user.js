@@ -648,7 +648,7 @@
         conf.ui.promptFilterNeg = promptFilterNeg;
         conf.ui.promptFilterNeg = promptFilterNeg;
 
-
+        document.querySelector('.gradio-container').style.overflow = 'visible'; // Fix so that a dropdown menu can overlap the queue
 
         refreshSettings();
 
@@ -1417,19 +1417,15 @@
     }
 
     function findGradioComponentState(p_elem_id) {
-awqLog('findGradioComponentState:'+p_elem_id);
         return window.gradio_config.components.filter(comp => comp.props.elem_id == p_elem_id);
     }
     function findGradioComponentStateByLabel(p_elem_label) {
-awqLog('findGradioComponentState:'+p_elem_label);
         return window.gradio_config.components.filter(comp => comp.props.label == p_elem_label);
     }
     function getGradVal(p_grad_comp) {
-awqLog('getGradVal:'+p_grad_comp);
         return p_grad_comp.props.value;
     }
     function setGradVal(p_grad_comp,p_val) {
-awqLog('setGradVal:'+p_grad_comp+'->'+p_val);
         p_grad_comp.props.value = p_val;
     }
 })();
