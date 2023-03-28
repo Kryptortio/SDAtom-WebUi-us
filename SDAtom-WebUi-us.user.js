@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.1.6
+// @version      1.1.7
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -113,6 +113,7 @@
 
             i2iBatchInputDir: {sel:"#img2img_batch_input_dir textarea"},
             i2iBatchOutputDir: {sel:"#img2img_batch_output_dir textarea"},
+            i2iBatchOutputDir: {sel:"#img2img_batch_inpaint_mask_dir textarea"},
 
             sample: {sel:"#img2img_steps [id^=range_id]",sel2:"#img2img_steps input"},
             sampleMethod: {grad:"img2img_sampling"},
@@ -696,7 +697,7 @@
         let itemJSON =document.createElement('input');
         itemJSON.classList = 'AWQ-item-JSON';
         itemJSON.value = p_value || getValueJSON(p_type);
-        itemJSON.style.width = "calc(100vw - 275px)";
+        itemJSON.style.width = "calc(100vw - 290px)";
         itemJSON.style.height = "18px";
         itemJSON.onchange = function() {
             updateQueueState;
