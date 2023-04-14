@@ -20,6 +20,7 @@
             t2iContainer:{sel:"#tab_txt2img"},
             i2iContainer:{sel:"#tab_img2img"},
             extContainer:{sel:"#tab_extras"},
+            iBrowserContainer:{sel:"#tab_image_browser"},
             sdModelCheckpoint:{grad:"setting_sd_model_checkpoint"},
             versionContainer:{sel:"#footer .versions"},
 
@@ -230,6 +231,9 @@
  
 
         },
+        iBrowser: {
+            generationInfo: {sel: "#image_browser_tab_txt2img_image_browser_file_info textarea"}
+        },
         ui:{},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
         currentQueue: JSON.parse(localStorage.awqCurrentQueue || '[]'),
@@ -242,6 +246,9 @@
     };
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
+    const c_queueVariationsButtonText = 'Add 5 variations';
+    const c_queueHiResVersionButtonText = 'Add HiRes version';
+
     const c_processButtonText = 'Process queue';
     const c_defaultTextStoredSettings = "Stored settings";
     const c_innerUIWidth = 'calc(100vw - 20px)';
@@ -351,10 +358,28 @@
         mapElementsToConf(conf.i2i.controls, 'i2i control');
         mapElementsToConf(conf.ext, 'ext object');
         mapElementsToConf(conf.ext.controls, 'ext control');
+        mapElementsToConf(conf.iBrowser, 'iBrowser object');
 
         setInterval(updateStatus, c_wait_tick_duration);
 
 
+    }
+
+    function addFunctionButton(container, top, innerHTML, onclick, title) {
+        let button = document.createElement('button');
+        button.innerHTML = innerHTML;
+        button.style.height = c_uiElemntHeight;
+        button.style.color = 'black';
+        button.style.position = 'fixed';
+        button.style.top = top+'px';
+        button.style.right = 0;
+        button.style.opacity = 0.2;
+        button.onclick = onclick;
+        button.style.cursor = "pointer";
+        button.title = title;
+        button.style.display = 'none'
+        container.appendChild(button);
+        return button;
     }
 
     function generateMainUI() {
@@ -364,20 +389,13 @@
         container.style.position = "relative";
         document.body.appendChild(container);
 
-
-
-        let addToQueueButton = document.createElement('button');
-        addToQueueButton.innerHTML = c_addToQueueButtonText;
-        addToQueueButton.style.height = c_uiElemntHeight;
-        addToQueueButton.style.color = 'black';
-        addToQueueButton.style.position = 'fixed';
-        addToQueueButton.style.top = 0;
-        addToQueueButton.style.right = 0;
-        addToQueueButton.style.opacity = 0.2;
-        addToQueueButton.onclick = appendQueueItem;
-        addToQueueButton.style.cursor = "pointer";
-        addToQueueButton.title = "Add an item to the queue according to current tab and settings";
-        container.appendChild(addToQueueButton);
+        let addToQueueButton = addFunctionButton(container, 0, c_addToQueueButtonText, appendQueueItem, "Add an item to the queue according to current tab and settings");
+        let queueVariationsButton = addFunctionButton(container, 0, c_queueVariationsButtonText, appendQueueVariations, "Add 5 variations of the current image to the queue");
+        let queueHiResVersionButton = addFunctionButton(container, 30, c_queueHiResVersionButtonText, appendQueueHiResVersion, "Add a HiRes version of the current image to the queue");
+        let unsupportedButton = addFunctionButton(container, 0, 'Tab not supported', function(){}, "Not supported");
+        unsupportedButton.disabled = true;
+        unsupportedButton.innerHTML = 'Tab not supported';
+        unsupportedButton.style.cursor = 'not-allowed';
 
         let defaultQueueQuantity = document.createElement('input');
         defaultQueueQuantity.placeholder = 'Def #';
@@ -634,6 +652,10 @@
         container.appendChild(extensionScript);
 
         conf.ui.addToQueueButton = addToQueueButton;
+        conf.ui.queueVariationsButton = queueVariationsButton;
+        conf.ui.queueHiResVersionButton = queueHiResVersionButton;
+        conf.ui.unsupportedButton = unsupportedButton;
+
         conf.ui.queueContainer = queueContainer;
         conf.ui.clearButton = clearButton;
         conf.ui.loadSettingButton = loadSettingButton;
@@ -660,6 +682,131 @@
             updateQueueState();
         }
         awqLog('generateMainUI: Completed');
+    }
+
+    function appendQueueHiResVersion() {
+        //upscale by 2, should be a config item?
+        let upscale = 2
+        let type = 't2i';
+        awqLog('appendQueueHiResVersion');
+        let valueJSON = {type:type};
+        let prompt = conf.iBrowser.generationInfo.el.value
+        parsePrompt(valueJSON, prompt)
+        valueJSON['highresFix']=true
+        valueJSON['hrFixUpscaleBy'] = 2
+        valueJSON['hrFixdenoise'] = 0.7
+        valueJSON['hrFixUpscaler'] = 'Latent'
+        valueJSON.sdModelCheckpoint = valueJSON.sdModelCheckpoint || getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
+
+        appendQueueItem(1, JSON.stringify(valueJSON), type);
+    }
+
+    function appendQueueVariations() {
+        //number of variations, and variability. Should be a config item?
+        let variations=5
+        let variability=0.25
+        let type = 't2i';
+        awqLog('appendQueueVariations');
+        let valueJSON = {type:type};
+        let prompt = conf.iBrowser.generationInfo.el.value
+        parsePrompt(valueJSON, prompt)
+        valueJSON['varSeed'] = -1
+        valueJSON['varStr'] = variability
+        valueJSON['extra'] = true
+        valueJSON.sdModelCheckpoint = valueJSON.sdModelCheckpoint || getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
+
+        appendQueueItem(variations, JSON.stringify(valueJSON), type);
+    }
+
+    function parsePrompt(valueJSON, largePrompt) {
+        //Used when loading prompt from image browser
+        /*
+        Kind of using the logic from generation_parameters_copypaste.py/parse_generation_parameters (but not really, because that doesn't account for Template/Negative Template)
+        Structure
+        <prompt>
+        Negative prompt: <negative prompt>
+        a1: b1, a2: b2, etc
+        Template: <template>
+        Negative Template: <negative template>
+
+        <prompt>, <negative prompt>, <template> and <negative template> can all be multiline, or missing. 
+        Maybe assume that <prompt> is never missing?
+        */
+        let lines = largePrompt.split(/\r?\n/);
+        let whichLine=0; //0=prompt, 1=negPrompt, 2=template, 3=negTemplate, 4: dictionary
+        valueJSON['prompt']='';
+        valueJSON['negPrompt']='';
+
+        for (let l of lines) {
+            if (l.startsWith("Negative prompt: ")) {
+                whichLine=1;l=l.substring(17);
+            }
+            else if (l.startsWith("Template: ")) {
+                whichLine=2;
+                l=l.substring(10);
+            }
+            else if (l.startsWith("Negative Template: ")) {
+                whichLine=3;
+                l=l.substring(19);
+            }
+            else if (l.startsWith("Steps: ")) {
+                whichLine=4;
+            }
+            switch (whichLine) {
+            case 0:
+                valueJSON['prompt']+=l;
+                break;
+            case 1:
+                valueJSON['negPrompt']+=l;
+                break;
+            case 2:
+                //ignore template
+                break;
+            case 3:
+                //ignore neg template
+                break;
+            case 4:
+                for (let v of l.split(/, /)) {
+                    let kv=v.split(/: /);
+                    let key=kv[0];
+                    switch (kv[0]){
+                    case "Steps":
+                        valueJSON['sample']=kv[1];
+                        break;
+                    case "Sampler":
+                        valueJSON['sampleMethod']=kv[1];
+                        break;
+                    case "CFG scale":
+                        valueJSON['cfg']=kv[1];
+                        break;
+                    case "Seed":
+                        valueJSON['seed']=kv[1];
+                        break;
+                    case "Size":
+                        let wh=kv[1].split(/x/)
+                        valueJSON['width']=wh[0];
+                        valueJSON['height']=wh[1];
+                        break;
+                    case "Model":
+                        valueJSON['sdModelCheckpoint']=kv[1];
+                        break;
+                    case "Denoising strength":
+                        valueJSON['hrFixdenoise']=kv[1];
+                        break;
+                    case "Hires upscale":
+                        valueJSON['hrFixUpscaleBy']=kv[1];
+                        valueJSON['highresFix']=true
+                        break;
+                    case "Hires upscaler":
+                        valueJSON['hrFixUpscaler']=kv[1];
+                        break;
+                    }
+                    
+                }
+                break;
+            }
+        }
+
     }
 
     function appendQueueItem(p_quantity, p_value, p_type) {
@@ -860,25 +1007,29 @@
         let workingOnT2I = conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnExt = conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
 
-        // Reset addToQueueButton
-        conf.ui.addToQueueButton.disabled = false;
-        conf.ui.addToQueueButton.innerHTML = c_addToQueueButtonText;
-        conf.ui.addToQueueButton.style.cursor = 'pointer';
+        // Hide all buttons by default, and then show the right one
+        conf.ui.addToQueueButton.style.display = 'none'
+        conf.ui.unsupportedButton.style.display = 'none'
+        conf.ui.queueVariationsButton.style.display = 'none'
+        conf.ui.queueHiResVersionButton.style.display = 'none'
 
-		if(conf.commonData.i2iContainer.el.style.display !== 'none') {
-			conf.commonData.activeType = 'i2i';
-		} else if(conf.commonData.t2iContainer.el.style.display !== 'none') {
-			conf.commonData.activeType = 't2i';
-		} else if(conf.commonData.extContainer.el.style.display !== 'none') {
-			conf.commonData.activeType = 'ext';
-		} else {
-			conf.commonData.activeType = 'other';
-
-            // Disable addToQueueButton
-            conf.ui.addToQueueButton.disabled = true;
-            conf.ui.addToQueueButton.innerHTML = 'Tab not supported';
-            conf.ui.addToQueueButton.style.cursor = 'not-allowed';
-		}
+        if(conf.commonData.i2iContainer.el.style.display !== 'none') {
+            conf.commonData.activeType = 'i2i';
+            conf.ui.addToQueueButton.style.display = 'block';
+        } else if(conf.commonData.t2iContainer.el.style.display !== 'none') {
+            conf.commonData.activeType = 't2i';
+            conf.ui.addToQueueButton.style.display = 'block';
+        } else if(conf.commonData.extContainer.el.style.display !== 'none') {
+            conf.commonData.activeType = 'ext';
+            conf.ui.addToQueueButton.style.display = 'block';
+        } else if(conf.commonData.iBrowserContainer.el.style.display !== 'none') {
+            conf.commonData.activeType = 'iBrowser';
+            conf.ui.queueVariationsButton.style.display = 'block';
+            conf.ui.queueHiResVersionButton.style.display = 'block';
+        } else {
+            conf.commonData.activeType = 'other';
+            conf.ui.unsupportedButton.style.display = 'block';
+        }
 
         let typeChanged = conf.commonData.activeType !== previousType ? true : false;
         let workingChanged = conf.commonData.working !== previousWorking ? true : false;
@@ -1286,7 +1437,7 @@
 
 
     function getValueJSON(p_type) {
-		let type = p_type || conf.commonData.activeType;
+        let type = p_type || conf.commonData.activeType;
         awqLog('getValueJSON: type=' + type);
         let valueJSON = {type:type};
 
@@ -1329,7 +1480,7 @@
     }
     async function loadJson(p_json) {
         let inputJSONObject = JSON.parse(p_json);
-		let type = inputJSONObject.type ? inputJSONObject.type : conf.commonData.activeType;
+        let type = inputJSONObject.type ? inputJSONObject.type : conf.commonData.activeType;
         let oldData = JSON.parse(getValueJSON(type));
         let waitForThisContainer;
         awqLog('loadJson: ' + type);
