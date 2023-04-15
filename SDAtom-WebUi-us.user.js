@@ -380,6 +380,9 @@
 			autoscrollOutput:{name:"Autoscroll console", description:"Scroll console automatically when new lines appear", type:"boolean",value:true},
 			verboseLog:{name:"Verbose console", description:"Log as much as possible to the console", type:"boolean",value:false},
 			maxOutputLines:{name:"Max console lines", description:"The maximum number of lines that can be shown in the console box", type:"numeric",value:"500"},
+			overwriteQueueSettings1:{name:"Alt 1 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 1 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"768","height":"768"}'},
+			overwriteQueueSettings2:{name:"Alt 2 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 2 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"1024","height":"1024"}'},
+			overwriteQueueSettings3:{name:"Alt 3 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 3 button to add to queue (same format as in the queue)", type:"text",value:'{"sample":"20","sampleMethod":"Euler a","width":"512","height":"512","restoreFace": false,"tiling": false,"batchCount": "1","batchSize": "1","cfg": "7","seed": "-1","extra": false,  "varSeed": "-1","varStr": "0"}'},
 //			IDIDIDI:{name:"", description:"", type:"",value:""},
 		},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
@@ -549,14 +552,14 @@
 
     }
 
-    function appendAddToQueueButton(container, top, innerHTML, onclick, title) {
+    function appendAddToQueueButton(container, top, innerHTML, onclick, title, right) {
         let button = document.createElement('button');
         button.innerHTML = innerHTML;
         button.style.height = c_uiElemntHeight;
         button.style.color = 'black';
         button.style.position = 'fixed';
-        button.style.top = top+'px';
-        button.style.right = 0;
+        button.style.top = top + 'px';
+        button.style.right = right ? right + 'px' : 0;
         button.style.opacity = 0.2;
         button.onclick = onclick;
         button.style.cursor = "pointer";
@@ -574,6 +577,9 @@
         document.body.appendChild(container);
 
         let addToQueueButton = appendAddToQueueButton(container, 0, c_addToQueueButtonText, appendQueueItem, "Add an item to the queue according to current tab and settings");
+		let addToQueueButtonA1 = appendAddToQueueButton(container, 25, 'A1', () => {appendQueueItem(null, null, null, JSON.parse(conf.scriptSettings.overwriteQueueSettings1.value)) }, "Add an item to the queue according to current tab and settings and overwrite with Alt 1",63);
+        let addToQueueButtonA2 = appendAddToQueueButton(container, 25, 'A2', () => {appendQueueItem(null, null, null, JSON.parse(conf.scriptSettings.overwriteQueueSettings2.value)) }, "Add an item to the queue according to current tab and settings and overwrite with Alt 2",32);
+        let addToQueueButtonA3 = appendAddToQueueButton(container, 25, 'A3', () => {appendQueueItem(null, null, null, JSON.parse(conf.scriptSettings.overwriteQueueSettings3.value)) }, "Add an item to the queue according to current tab and settings and overwrite with Alt 3",1);
         let unsupportedButton = appendAddToQueueButton(container, 0, 'Tab not supported', function(){}, "Not supported");
         unsupportedButton.disabled = true;
         unsupportedButton.innerHTML = 'Tab not supported';
@@ -720,6 +726,9 @@
         
 
         conf.ui.addToQueueButton = addToQueueButton;
+        conf.ui.addToQueueButtonA1 = addToQueueButtonA1;
+        conf.ui.addToQueueButtonA2 = addToQueueButtonA2;
+        conf.ui.addToQueueButtonA3 = addToQueueButtonA3;
         conf.ui.unsupportedButton = unsupportedButton;
 
         conf.ui.queueContainer = queueContainer;
@@ -754,9 +763,11 @@
         awqLog('generateMainUI: Completed');
     }
 
-    function appendQueueItem(p_quantity, p_value, p_type) {
+    function appendQueueItem(p_quantity, p_value, p_type, p_overwrite_data) {
         awqLog('appendQueueItem: quantity:' + p_quantity + ' type:' + p_type);
-        let quantity = isNaN(p_quantity) ? (conf.ui.defaultQueueQuantity.value > 0 ? conf.ui.defaultQueueQuantity.value : 1) : p_quantity;
+        let quantity = isNaN(p_quantity) || p_quantity == null ? 
+			(parseInt(conf.ui.defaultQueueQuantity.value) > 0 ? 
+				parseInt(conf.ui.defaultQueueQuantity.value) : 1) : p_quantity;
 
         let queueItem = document.createElement('div');
         queueItem.style.width = c_innerUIWidth;
@@ -788,7 +799,15 @@
         itemQuantity.title = "This is how many times this item should be executed";
         let itemJSON =document.createElement('input');
         itemJSON.classList = 'AWQ-item-JSON';
-        itemJSON.value = p_value || getValueJSON(p_type);
+		itemJSON.value = p_value || getValueJSON(p_type);
+        if(p_overwrite_data) {
+			awqLog('appendQueueItem: Adding to queue with Overwrite button');
+			let jsonData = JSON.parse(itemJSON.value);
+			for(let setKey in jsonData) {
+				if(p_overwrite_data.hasOwnProperty(setKey)) jsonData[setKey] = p_overwrite_data[setKey];
+			}
+			itemJSON.value = JSON.stringify(jsonData);
+		}
         itemJSON.style.width = "calc(100vw - 290px)";
         itemJSON.style.height = "18px";
         itemJSON.onchange = function() {
@@ -1097,6 +1116,9 @@
 
         // Hide all buttons by default, and then show the right one
         conf.ui.addToQueueButton.style.display = 'none'
+        conf.ui.addToQueueButtonA1.style.display = 'none'
+        conf.ui.addToQueueButtonA2.style.display = 'none'
+        conf.ui.addToQueueButtonA3.style.display = 'none'
         conf.ui.unsupportedButton.style.display = 'none'
         if(conf.extensions.iBrowser) {
 			conf.extensions.iBrowser.ui.queueVariationsButton.style.display = 'none';
@@ -1106,12 +1128,21 @@
         if(conf.commonData.i2iContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'i2i';
             conf.ui.addToQueueButton.style.display = 'block';
+            conf.ui.addToQueueButtonA1.style.display = 'block';
+            conf.ui.addToQueueButtonA2.style.display = 'block';
+            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.commonData.t2iContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 't2i';
             conf.ui.addToQueueButton.style.display = 'block';
+            conf.ui.addToQueueButtonA1.style.display = 'block';
+            conf.ui.addToQueueButtonA2.style.display = 'block';
+            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.commonData.extContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'ext';
             conf.ui.addToQueueButton.style.display = 'block';
+            conf.ui.addToQueueButtonA1.style.display = 'block';
+            conf.ui.addToQueueButtonA2.style.display = 'block';
+            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.extensions.iBrowser && conf.extensions.iBrowser.guiElems.iBrowserContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'iBrowser';
             conf.extensions.iBrowser.ui.queueVariationsButton.style.display = 'block';
@@ -1178,7 +1209,6 @@
     function playWorkCompleteSound() { if(conf.scriptSettings.notificationSound) c_audio_base64.play();}
 
     function editSetting() {
-
         let settingStorage = conf.ui.settingsStorage;
         let settingIndex = settingStorage.selectedIndex;
         let settingOption = settingStorage.options[settingIndex];
