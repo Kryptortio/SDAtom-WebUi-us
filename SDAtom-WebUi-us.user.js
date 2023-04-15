@@ -236,6 +236,13 @@
 				guiElems: {
 					iBrowserContainer:{sel:"#tab_image_browser"},
 					generationInfo: {sel: "#image_browser_tab_txt2img_image_browser_file_info textarea"},
+
+					txt2img:{sel:'#image_browser_tab_txt2img_image_browser_file_info textarea'},
+					img2img:{sel:'#image_browser_tab_img2img_image_browser_file_info textarea'},
+					txt2imgG:{sel:'#image_browser_tab_txt2img-grids_image_browser_file_info textarea'},
+					img2imgG:{sel:'#image_browser_tab_img2img-grids_image_browser_file_info textarea'},
+					extras:{sel:'#image_browser_tab_extras_image_browser_file_info textarea'},
+					favorites:{sel:'#image_browser_tab_favorites_image_browser_file_info textarea'},
 				},
 				ui:{},
 				text:{
@@ -243,39 +250,16 @@
 					queueHiResVersionButtonText:'Add HiRes version',
 				},
 				functions: {
-					appendQueueHiResVersion: function() {
-						//upscale by 2, should be a config item?
-						let upscale = 2;
-						let type = 't2i';
-						awqLog('appendQueueHiResVersion');
-						let valueJSON = {type:type};
-						let generationInfo = conf.extensions.iBrowser.guiElems.generationInfo.el.value;
-						conf.extensions.iBrowser.functions.parsePrompt(valueJSON, generationInfo);
-						valueJSON['highresFix'] = true;
-						valueJSON['hrFixUpscaleBy'] = 2;
-						valueJSON['hrFixdenoise'] = 0.7;
-						valueJSON['hrFixUpscaler'] = 'Latent';
-						valueJSON.sdModelCheckpoint = valueJSON.sdModelCheckpoint || getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
+					getValueJSON: function () {
+						awqLog('iBrowser.getValueJSON: parsing data');
+						let valueJSON = {type:'t2i'};
+			
+						let currentTab = document.querySelector('#image_browser_tabs_container button.selected').innerHTML;
+						currentTab = currentTab.replace(/\s/g,'');
+						currentTab = currentTab.replace('-grids','G');
 
-						appendQueueItem(1, JSON.stringify(valueJSON), type);
-					},
-					appendQueueVariations: function() {
-						//number of variations, and variability. Should be a config item?
-						let variations = 5;
-						let variability = 0.25;
-						let type = 't2i';
-						awqLog('appendQueueVariations');
-						let valueJSON = {type:type};
-						let generationInfo = conf.extensions.iBrowser.guiElems.generationInfo.el.value;
-						conf.extensions.iBrowser.functions.parsePrompt(valueJSON, generationInfo);
-						valueJSON['varSeed'] = -1;
-						valueJSON['varStr'] = variability;
-						valueJSON['extra'] = true;
-						valueJSON.sdModelCheckpoint = valueJSON.sdModelCheckpoint || getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
-
-						appendQueueItem(variations, JSON.stringify(valueJSON), type);
-					},
-					parsePrompt: function (valueJSON, generationInfo) {
+						let generationInfoValue = conf.extensions.iBrowser.guiElems[currentTab].el.value;
+						
 						//Used when loading prompt from image browser
 						/*
 						Kind of using the logic from generation_parameters_copypaste.py/parse_generation_parameters (but not really, because that doesn't account for Template/Negative Template)
@@ -289,7 +273,7 @@
 						<prompt>, <negative prompt>, <template> and <negative template> can all be multiline, or missing. 
 						Maybe assume that <prompt> is never missing?
 						*/
-						let lines = generationInfo.split(/\r?\n/);
+						let lines = generationInfoValue.split(/\r?\n/);
 						let whichLine=0; //0=prompt, 1=negPrompt, 2=template, 3=negTemplate, 4: dictionary
 						valueJSON['prompt']='';
 						valueJSON['negPrompt']='';
@@ -364,6 +348,7 @@
 									break;
 							} // End of switch
 						} // End of for
+						return JSON.stringify(valueJSON);
 					},
 				}, // End of functions
 			}, // End of iBrowser
@@ -383,16 +368,9 @@
 			overwriteQueueSettings1:{name:"Alt 1 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 1 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"768","height":"768"}'},
 			overwriteQueueSettings2:{name:"Alt 2 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 2 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"1024","height":"1024"}'},
 			overwriteQueueSettings3:{name:"Alt 3 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 3 button to add to queue (same format as in the queue)", type:"text",value:'{"sample":"20","sampleMethod":"Euler a","width":"512","height":"512","restoreFace": false,"tiling": false,"batchCount": "1","batchSize": "1","cfg": "7","seed": "-1","extra": false,  "varSeed": "-1","varStr": "0"}'},
-//			IDIDIDI:{name:"", description:"", type:"",value:""},
 		},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
         currentQueue: JSON.parse(localStorage.awqCurrentQueue || '[]'),
-        notificationSound: (localStorage.awqNotificationSound == 1 ? true : false), // TODO: replace
-        maxOutputLines: localStorage.awqMaxOutputLines || 500, // TODO: replace
-        autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true), // TODO: replace
-        verboseLog: (localStorage.awqVerboseLog == 1 ? true : false), // TODO: replace
-        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[]'), // TODO: replace
-        extensionScript: localStorage.awqExtensionScript || '', // TODO: replace
     };
 	
 	if(localStorage.hasOwnProperty("awqNotificationSound") && 
@@ -410,14 +388,6 @@
 			conf.scriptSettings.promptFilter.value = localStorage.awqPromptFilter;
 		if (localStorage.hasOwnProperty("awqExtensionScript")) 
 			conf.scriptSettings.extensionScript.value = localStorage.awqExtensionScript;
-		/*
-		localStorage.removeItem('awqNotificationSound');
-		localStorage.removeItem('awqAutoscrollOutput');
-		localStorage.removeItem('awqVerboseLog');
-		localStorage.removeItem('awqMaxOutputLines');
-		localStorage.removeItem('awqPromptFilter');
-		localStorage.removeItem('awqExtensionScript');
-		*/
 	}
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
@@ -545,7 +515,7 @@
         mapElementsToConf(conf.i2i.controls, 'i2i control');
         mapElementsToConf(conf.ext, 'ext object');
         mapElementsToConf(conf.ext.controls, 'ext control');
-        if(conf.extensions.iBrowser) mapElementsToConf(conf.extensions.iBrowser.guiElems, 'iBrowser object');
+        if(conf.extensions.iBrowser) waitForElm(conf.extensions.iBrowser.guiElems.txt2img.sel).then(function() {mapElementsToConf(conf.extensions.iBrowser.guiElems, 'iBrowser objects')});
 
         setInterval(updateStatus, c_wait_tick_duration);
 
@@ -738,16 +708,6 @@
         conf.ui.settingsStorage = settingsStorage;
         conf.ui.defaultQueueQuantity = defaultQueueQuantity;
         conf.ui.outputConsole = outputConsole;
-
-		// Extension elements
-		if(conf.extensions.iBrowser) {
-			let queueVariationsButton = appendAddToQueueButton(container, 0, conf.extensions.iBrowser.text.queueVariationsButtonText, conf.extensions.iBrowser.functions.appendQueueVariations, "Add 5 variations of the current image to the queue");
-			let queueHiResVersionButton = appendAddToQueueButton(container, 30, conf.extensions.iBrowser.text.queueHiResVersionButtonText, conf.extensions.iBrowser.functions.appendQueueHiResVersion, "Add a HiRes version of the current image to the queue");
-			
-			conf.extensions.iBrowser.ui.queueVariationsButton = queueVariationsButton;
-			conf.extensions.iBrowser.ui.queueHiResVersionButton = queueHiResVersionButton;
-		}
-
 
         document.querySelector('.gradio-container').style.overflow = 'visible'; // Fix so that a dropdown menu can overlap the queue
 
@@ -1120,37 +1080,26 @@
         conf.ui.addToQueueButtonA2.style.display = 'none'
         conf.ui.addToQueueButtonA3.style.display = 'none'
         conf.ui.unsupportedButton.style.display = 'none'
-        if(conf.extensions.iBrowser) {
-			conf.extensions.iBrowser.ui.queueVariationsButton.style.display = 'none';
-			conf.extensions.iBrowser.ui.queueHiResVersionButton.style.display = 'none';
-		}
 
         if(conf.commonData.i2iContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'i2i';
-            conf.ui.addToQueueButton.style.display = 'block';
-            conf.ui.addToQueueButtonA1.style.display = 'block';
-            conf.ui.addToQueueButtonA2.style.display = 'block';
-            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.commonData.t2iContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 't2i';
-            conf.ui.addToQueueButton.style.display = 'block';
-            conf.ui.addToQueueButtonA1.style.display = 'block';
-            conf.ui.addToQueueButtonA2.style.display = 'block';
-            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.commonData.extContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'ext';
-            conf.ui.addToQueueButton.style.display = 'block';
-            conf.ui.addToQueueButtonA1.style.display = 'block';
-            conf.ui.addToQueueButtonA2.style.display = 'block';
-            conf.ui.addToQueueButtonA3.style.display = 'block';
         } else if(conf.extensions.iBrowser && conf.extensions.iBrowser.guiElems.iBrowserContainer.el.style.display !== 'none') {
             conf.commonData.activeType = 'iBrowser';
-            conf.extensions.iBrowser.ui.queueVariationsButton.style.display = 'block';
-            conf.extensions.iBrowser.ui.queueHiResVersionButton.style.display = 'block';
         } else {
             conf.commonData.activeType = 'other';
             conf.ui.unsupportedButton.style.display = 'block';
         }
+		
+		if(conf.commonData.activeType != 'other') {
+            conf.ui.addToQueueButton.style.display = 'block';
+            conf.ui.addToQueueButtonA1.style.display = 'block';
+            conf.ui.addToQueueButtonA2.style.display = 'block';
+            conf.ui.addToQueueButtonA3.style.display = 'block';
+		}
 
         let typeChanged = conf.commonData.activeType !== previousType ? true : false;
         let workingChanged = conf.commonData.working !== previousWorking ? true : false;
@@ -1560,12 +1509,13 @@
             valueJSON.extrasResizeMode = conf.ext.controls.extrasResizeMode.filter((elem) => {
                 return conf.shadowDOM.root.querySelector(elem.containerSel).style.display == 'none' ? false : true
             })[0].name;
-        }
-        if(type == 'i2i') { // Needs special saving since it's not an input but a tab switch
+        } else if(type == 'i2i') { // Needs special saving since it's not an input but a tab switch
             valueJSON.i2iMode = conf.i2i.controls.i2iMode.filter((elem) => {
                 return conf.shadowDOM.root.querySelector(elem.containerSel).style.display == 'none' ? false : true
             })[0].name;
-        }
+        } else if(type == 'iBrowser') {
+			return conf.extensions.iBrowser.functions.getValueJSON();
+		}
 
         for (let prop in conf[type]) {
             if(prop !== 'controls') {
@@ -1647,6 +1597,26 @@
         awqLog(loadOutput.replace(/\|\s$/, ''));
         forceGradioUIUpdate();
     }
+
+	function waitForElm(selector) {
+		return new Promise(resolve => {
+			if (document.querySelector(selector)) {
+				return resolve(document.querySelector(selector));
+			}
+
+			const observer = new MutationObserver(mutations => {
+				if (document.querySelector(selector)) {
+					resolve(document.querySelector(selector));
+					observer.disconnect();
+				}
+			});
+
+			observer.observe(document.body, {
+				childList: true,
+				subtree: true
+			});
+		});
+	}
 
     function triggerChange(p_elem) {
         let evt = document.createEvent("HTMLEvents");
