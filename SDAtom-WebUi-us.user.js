@@ -22,7 +22,7 @@
             extContainer:{sel:"#tab_extras"},
             sdModelCheckpoint:{grad:"setting_sd_model_checkpoint"},
             versionContainer:{sel:"#footer .versions"},
-			
+
             working:false,
             processing:false,
             waiting:false,
@@ -310,7 +310,7 @@
 							else if (l.startsWith("Steps: ")) {
 								whichLine=4;
 							}
-console.log('whichLine:'+whichLine+ ' l:'+l );
+
 							switch (whichLine) {
 								case 0:
 									valueJSON['prompt']+=l;
@@ -364,25 +364,60 @@ console.log('whichLine:'+whichLine+ ' l:'+l );
 									break;
 							} // End of switch
 						} // End of for
-console.log('valueJSON'+JSON.stringify(valueJSON));
 					},
 				}, // End of functions
 			}, // End of iBrowser
 		},
 
         ui:{},
+		scriptSettings: {
+			defaultQuantity:{name:"Default queue quantity", description:"Default number of times to execute each queue item", type:"numeric",value:"1"},
+			rememberQueue:{name:"Remember queue", description:"Remember the queue if you reload the page", type:"boolean",value:true},
+			notificationSound:{name:"Notification sound", description:"Sound to be played when processing of queue items stops", type:"boolean",value:true},
+			extensionScript:{name:"Extension script(s)", description:"https://github.com/Kryptortio/SDAtom-WebUi-us#script-extensions", type:"text",value:""},
+			promptFilter:{name:"Prompt filter(s)", description:"https://github.com/Kryptortio/SDAtom-WebUi-us#prompt-filter", type:"text",value:""},
+			promptFilterNegative:{name:"Filter negative prompt", description:"Apply the prompt filter to the negative filter as well", type:"boolean",value:false},
+			autoscrollOutput:{name:"Autoscroll console", description:"Scroll console automatically when new lines appear", type:"boolean",value:true},
+			verboseLog:{name:"Verbose console", description:"Log as much as possible to the console", type:"boolean",value:false},
+			maxOutputLines:{name:"Max console lines", description:"The maximum number of lines that can be shown in the console box", type:"numeric",value:"500"},
+//			IDIDIDI:{name:"", description:"", type:"",value:""},
+		},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
         currentQueue: JSON.parse(localStorage.awqCurrentQueue || '[]'),
-        notificationSound: (localStorage.awqNotificationSound == 1 ? true : false),
-        maxOutputLines: localStorage.awqMaxOutputLines || 500,
-        autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true),
-        verboseLog: (localStorage.awqVerboseLog == 1 ? true : false),
-        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[]'),
-        extensionScript: localStorage.awqExtensionScript || '',
+        notificationSound: (localStorage.awqNotificationSound == 1 ? true : false), // TODO: replace
+        maxOutputLines: localStorage.awqMaxOutputLines || 500, // TODO: replace
+        autoscrollOutput: (localStorage.awqAutoscrollOutput == 0 ? false : true), // TODO: replace
+        verboseLog: (localStorage.awqVerboseLog == 1 ? true : false), // TODO: replace
+        promptFilter: JSON.parse(localStorage.awqPromptFilter || '[]'), // TODO: replace
+        extensionScript: localStorage.awqExtensionScript || '', // TODO: replace
     };
+	
+	if(localStorage.hasOwnProperty("awqNotificationSound") && 
+		!localStorage.hasOwnProperty("awqScriptSettings")) { // Tmp settings migration
+		awqLog('Copying settings from old storage');
+		if (localStorage.hasOwnProperty("awqNotificationSound")) 
+			conf.scriptSettings.notificationSound.value = localStorage.awqNotificationSound == 1 ? true : false;
+		if (localStorage.hasOwnProperty("awqAutoscrollOutput")) 
+			conf.scriptSettings.autoscrollOutput.value = localStorage.awqAutoscrollOutput == 1 ? true : false;
+		if (localStorage.hasOwnProperty("awqVerboseLog")) 
+			conf.scriptSettings.verboseLog.value = localStorage.awqVerboseLog == 1 ? true : false;
+		if (localStorage.hasOwnProperty("awqMaxOutputLines")) 
+			conf.scriptSettings.maxOutputLines.value = localStorage.awqMaxOutputLines;
+		if (localStorage.hasOwnProperty("awqPromptFilter")) 
+			conf.scriptSettings.promptFilter.value = localStorage.awqPromptFilter;
+		if (localStorage.hasOwnProperty("awqExtensionScript")) 
+			conf.scriptSettings.extensionScript.value = localStorage.awqExtensionScript;
+		/*
+		localStorage.removeItem('awqNotificationSound');
+		localStorage.removeItem('awqAutoscrollOutput');
+		localStorage.removeItem('awqVerboseLog');
+		localStorage.removeItem('awqMaxOutputLines');
+		localStorage.removeItem('awqPromptFilter');
+		localStorage.removeItem('awqExtensionScript');
+		*/
+	}
     const c_emptyQueueString = 'Queue is empty';
     const c_addToQueueButtonText = 'Add to queue';
-
     const c_processButtonText = 'Process queue';
     const c_defaultTextStoredSettings = "Stored settings";
     const c_innerUIWidth = 'calc(100vw - 20px)';
@@ -473,10 +508,10 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
 			}
 		}
 
+		loadScriptSettings();
         generateMainUI();
 
         try { eval(conf.extensionScript);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
-
 
         function mapElementsToConf(p_object, p_info) {
             for (let prop in p_object) {
@@ -550,6 +585,8 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         defaultQueueQuantity.style.width = '50px';
         defaultQueueQuantity.type = 'number';
         defaultQueueQuantity.title = "How many items of each will be added to the queue (default is 1)";
+		defaultQueueQuantity.value = conf.scriptSettings.defaultQuantity.value;
+        defaultQueueQuantity.onchange = function() {conf.scriptSettings.defaultQuantity.value = this.value;};
         defaultQueueQuantity.onfocus = function() {this.select();};
         container.appendChild(defaultQueueQuantity);
         let assignDefaultToAll = document.createElement('button');
@@ -559,8 +596,8 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         assignDefaultToAll.style.height = c_uiElemntHeight;
         assignDefaultToAll.style.marginRight = '10px';
         assignDefaultToAll.onclick = function() {
-            if(conf.ui.defaultQueueQuantity.value >= 0) {
-                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.ui.defaultQueueQuantity.value});
+            if(conf.sicriptSettings.defautQuantity.value >= 0) {
+                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.sicriptSettings.defautQuantity.value});
                 updateQueueState();
             }
         };
@@ -578,7 +615,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         container.appendChild(processButton);
 
         let clearButton = document.createElement('button');
-        clearButton.innerHTML = "Clear";
+        clearButton.innerHTML = "Clear queue";
         clearButton.style.marginLeft = "5px";
         clearButton.style.height = c_uiElemntHeight;
         clearButton.style.cursor = "pointer";
@@ -593,77 +630,14 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         }
         container.appendChild(clearButton);
 
-        let rememberQueueCheckboxLabel = document.createElement('label');
-        rememberQueueCheckboxLabel.innerHTML = 'Remember queue';
-        rememberQueueCheckboxLabel.style.color = "white";
-        rememberQueueCheckboxLabel.style.marginLeft = "10px";
-        rememberQueueCheckboxLabel.title = "Remember the queue if the page is reloaded (will keep remembering until you remove this again or clear the queue)";
-        container.appendChild(rememberQueueCheckboxLabel);
-        let rememberQueue = document.createElement('input');
-        rememberQueue.type = "checkbox";
-        rememberQueue.onclick = updateQueueState;
-        rememberQueue.checked = conf.currentQueue.length > 0 ? true : false;
-        rememberQueue.style.cursor = "pointer";
-        rememberQueue.title = "Remember the queue if the page is reloaded (will keep remembering until you remove this again or clear the queue)";
-        container.appendChild(rememberQueue);
-
-        let notificationSoundCheckboxLabel = document.createElement('label');
-        notificationSoundCheckboxLabel.innerHTML = '🔉';
-        notificationSoundCheckboxLabel.style.color = "white";
-        notificationSoundCheckboxLabel.style.marginLeft = "10px";
-        notificationSoundCheckboxLabel.title = "Play a poping sound when the queue is completed";
-        container.appendChild(notificationSoundCheckboxLabel);
-        let notificationSoundCheckbox = document.createElement('input');
-        notificationSoundCheckbox.type = "checkbox";
-        notificationSoundCheckbox.onclick = function() {localStorage.awqNotificationSound = this.checked ? 1 : 0; conf.notificationSound = this.checked};
-        notificationSoundCheckbox.checked = conf.notificationSound;
-        notificationSoundCheckbox.style.cursor = "pointer";
-        notificationSoundCheckbox.title = "Play a poping sound when the queue is completed";
-        container.appendChild(notificationSoundCheckbox);
-
-        let importExportButton = document.createElement('button');
-        importExportButton.innerHTML = "Import/export";
-        importExportButton.style.marginLeft = "5px";
-        importExportButton.style.height = c_uiElemntHeight;
-        importExportButton.style.cursor = "pointer";
-        importExportButton.title = "Import or export all the data for this script (to import add previoiusly exported data to the right, to export leave it empty). Importing data will reload the page!";
-        importExportButton.onclick = exportImport;
-        container.appendChild(importExportButton);
-        let importExportData = document.createElement('input');
-        importExportData.placeholder = 'Import/export data';
-        importExportData.style.height = c_uiElemntHeightSmall;
-        importExportData.style.width = '125px';
-        importExportData.style.marginRight = '10px';
-        importExportData.title = "Exported data will be show here, add data here to import it. Importing data will reload the page!";
-        importExportData.onfocus = function() {this.select();};
-        container.appendChild(importExportData);
-
-        let promptFilter = document.createElement('input');
-        promptFilter.title = `Filters that are used to modify prompt when adding to queue. Example format [{"desc":"Remove multi space","pattern":"\\s{2,}", "replace":" ", "flags":"g"}] desc is optional and will only be shown in output console`;
-        promptFilter.placeholder = "Prompt filter (JSON array)";
-        promptFilter.value = JSON.stringify(conf.promptFilter);
-        promptFilter.onchange = function() {
-            if(isJsonString(promptFilter.value) ) {
-                awqLog('promptFilter saved');
-                localStorage.awqPromptFilter = JSON.stringify(JSON.parse(promptFilter.value));
-                conf.promptFilter = JSON.parse(promptFilter.value);
-            } else {
-                awqLog('promptFilter is invalid:<pre>' + promptFilter.value+ '</pre>');
-            }
-        }
-        container.appendChild(promptFilter);
-        let promptFilterNegLabel = document.createElement('label');
-        promptFilterNegLabel.innerHTML = 'Neg prompt';
-        promptFilterNegLabel.style.color = "white";
-        promptFilterNegLabel.style.marginLeft = "10px";
-        promptFilterNegLabel.titpromptFilterNegLabelle = "Also filter negative prompt";
-        container.appendChild(promptFilterNegLabel);
-        let promptFilterNeg = document.createElement('input');
-        promptFilterNeg.type = "checkbox";
-        promptFilterNeg.checked = true;
-        promptFilterNeg.style.cursor = "pointer";
-        promptFilterNeg.title = "Also filter negative prompt";
-        container.appendChild(promptFilterNeg);
+        let scriptSettingsButton = document.createElement('button');
+        scriptSettingsButton.innerHTML = "Script settings";
+        scriptSettingsButton.style.float = 'right';
+        scriptSettingsButton.style.height = c_uiElemntHeight;
+        scriptSettingsButton.style.cursor = "pointer";
+        scriptSettingsButton.title = "Open the settings popup for the script";
+        scriptSettingsButton.onclick = openScriptSettingsPopup;
+        container.appendChild(scriptSettingsButton);
 
 
         let queueContainer = document.createElement('div');
@@ -734,33 +708,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         outputConsole.style.backgroundColor = "white";
         outputConsole.style.boxShadow = 'inset 0px 1px 4px #666';
         container.appendChild(outputConsole);
-        let maxOutputConsoleRows = document.createElement('input');
-        maxOutputConsoleRows.value = conf.maxOutputLines;
-        maxOutputConsoleRows.placeholder = 'Max rows';
-        maxOutputConsoleRows.style.height = c_uiElemntHeightSmall;
-        maxOutputConsoleRows.style.width = '50px';
-        maxOutputConsoleRows.style.marginRight = '10px';
-        maxOutputConsoleRows.style.marginLeft = '10px';
-        maxOutputConsoleRows.type = 'number';
-        maxOutputConsoleRows.title = "Max number of rows listed in console above";
-        maxOutputConsoleRows.onfocus = function() {this.select();};
-        maxOutputConsoleRows.onchange = function() {localStorage.awqMaxOutputLines = this.value; conf.maxOutputLines = this.value;};
-        container.appendChild(maxOutputConsoleRows);
-        let autoscrollOutputConsoleLabel = document.createElement('label');
-        autoscrollOutputConsoleLabel.innerHTML = 'Autoscroll';
-        autoscrollOutputConsoleLabel.style.color = "white";
-        autoscrollOutputConsoleLabel.style.marginLeft = "10px";
-        autoscrollOutputConsoleLabel.title = "Autoscroll console above";
-        container.appendChild(autoscrollOutputConsoleLabel);
-        let autoscrollOutputConsole = document.createElement('input');
-        autoscrollOutputConsole.type = "checkbox";
-        autoscrollOutputConsole.onclick = function() {localStorage.awqNotificationSound = localStorage.awqNotificationSound == 1 ? 0 : 1;};
-        autoscrollOutputConsole.checked = (localStorage.awqNotificationSound == 1 ? true : false);
-        autoscrollOutputConsole.style.cursor = "pointer";
-        autoscrollOutputConsole.title = "Automatically scroll to the bottom of the console when a new message is added";
-        autoscrollOutputConsole.onclick = function() {localStorage.awqAutoscrollOutput = this.checked ? 1 : 0; conf.autoscrollOutput = this.checked};
-        autoscrollOutputConsole.checked = conf.autoscrollOutput;
-        container.appendChild(autoscrollOutputConsole);
+        
         let outputConsoleClearButton = document.createElement('button');
         outputConsoleClearButton.innerHTML = "Clear";
         outputConsoleClearButton.style.height = c_uiElemntHeight;
@@ -769,34 +717,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         outputConsoleClearButton.style.marginLeft = "10px";
         outputConsoleClearButton.title = "Clear the console above";
         container.appendChild(outputConsoleClearButton);
-        let verboseOutputConsoleLabel = document.createElement('label');
-        verboseOutputConsoleLabel.innerHTML = 'Verbose';
-        verboseOutputConsoleLabel.style.color = "white";
-        verboseOutputConsoleLabel.style.marginLeft = "10px";
-        verboseOutputConsoleLabel.title = "Log as much as possible (for troubleshooting)";
-        container.appendChild(verboseOutputConsoleLabel);
-        let verboseOutputConsole = document.createElement('input');
-        verboseOutputConsole.type = "checkbox";
-        verboseOutputConsole.onclick = function() {localStorage.awqVerboseLog = localStorage.awqVerboseLog == 1 ? 0 : 1;};
-        verboseOutputConsole.checked = (localStorage.awqVerboseLog == 1 ? true : false);
-        verboseOutputConsole.style.cursor = "pointer";
-        verboseOutputConsole.title = "Log as much as possible (for troubleshooting)";
-        verboseOutputConsole.onclick = function() {localStorage.awqVerboseLog = this.checked ? 1 : 0; conf.verboseLog = this.checked};
-        verboseOutputConsole.checked = conf.verboseLog;
-        container.appendChild(verboseOutputConsole);
-
-        let extensionScript = document.createElement('textarea');
-        extensionScript.style.height = c_uiElemntHeightSmall;
-        extensionScript.style.padding = '1px';
-        extensionScript.style.border = '1px';
-        extensionScript.style.margin = '0';
-        extensionScript.placeholder = "Script extensions";
-        extensionScript.title = "Put scripts here to be executed after the main ui has been created";
-        extensionScript.value = conf.extensionScript;
-        extensionScript.onchange = function() {
-                    localStorage.awqExtensionScript = extensionScript.value;
-        }
-        container.appendChild(extensionScript);
+        
 
         conf.ui.addToQueueButton = addToQueueButton;
         conf.ui.unsupportedButton = unsupportedButton;
@@ -807,13 +728,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         conf.ui.settingName = settingName;
         conf.ui.settingsStorage = settingsStorage;
         conf.ui.defaultQueueQuantity = defaultQueueQuantity;
-        conf.ui.rememberQueue = rememberQueue;
-        conf.ui.notificationSoundCheckbox = notificationSoundCheckbox;
-        conf.ui.importExportData = importExportData;
         conf.ui.outputConsole = outputConsole;
-        conf.ui.promptFilter = promptFilter;
-        conf.ui.promptFilterNeg = promptFilterNeg;
-        conf.ui.promptFilterNeg = promptFilterNeg;
 
 		// Extension elements
 		if(conf.extensions.iBrowser) {
@@ -976,6 +891,149 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         if(isNaN(p_quantity)) updateQueueState();
     }
 
+	function saveScriptSettings() {
+		awqLog('Saving script settings');
+		let scriptSettingsCopy = structuredClone(conf.scriptSettings);
+		
+		// Delete data that does not need to be saved
+		for(let ssk in scriptSettingsCopy) {
+			for(let ssk2 in scriptSettingsCopy[ssk]) {
+				if(ssk2 != 'value') delete scriptSettingsCopy[ssk][ssk2];
+			}
+		}
+		
+		conf.ui.defaultQueueQuantity.value = conf.scriptSettings.defaultQuantity.value; // Update beacuse this one is in two places
+		localStorage.awqScriptSettings = JSON.stringify(scriptSettingsCopy);
+	}
+	
+	function loadScriptSettings() {
+		if(!localStorage.hasOwnProperty("awqScriptSettings")) return;
+		awqLog('Loding saved script settings');
+		let savedSettings = JSON.parse(localStorage.awqScriptSettings);
+		for(let ssk in conf.scriptSettings) {
+			if(savedSettings.hasOwnProperty(ssk)) conf.scriptSettings[ssk].value =  savedSettings[ssk].value;
+		}
+	}
+
+	function openScriptSettingsPopup() {
+		let dialog = document.createElement('span');
+		dialog.style.minWidth = '90%';
+		dialog.style.minHeight = '90%';
+		dialog.style.marginLeft = '5%';
+		dialog.style.marginTop = '5%';
+		dialog.style.top = '0';
+		dialog.style.position = 'fixed';
+		dialog.style.backgroundColor = 'white';
+		dialog.style.zIndex = '1000';
+		dialog.style.borderRadius = '15px';
+		dialog.style.boxShadow = '3px 3px 100px black,3px 3px 500px black, 3px 3px 25px black, inset 0 0 10px black';
+		
+		let titleText = document.createElement('span');
+		titleText.innerHTML = '<b>Script settings</b> - <i>hold your mouse over an item for a description</i>';
+		titleText.style.top = '5px';
+		titleText.style.left = '10px';
+		titleText.style.position = 'absolute';
+		
+		let closeButton = document.createElement('span');
+		closeButton.style.position = 'absolute';
+		closeButton.style.top = '5px';
+		closeButton.style.right = '10px';
+		closeButton.style.textShadow = '#292929 2px 3px 5px';
+		closeButton.style.cursor = 'pointer';
+		closeButton.onclick = function() {document.body.removeChild(dialog); saveScriptSettings();};
+		closeButton.innerHTML = '⛌';
+
+		let dialogBody = document.createElement('span');
+		dialogBody.style.width = '90%';
+		dialogBody.style.height = '90%';
+		dialogBody.style.marginLeft = '5%';
+		dialogBody.style.marginTop = 'max(5%,45px)';
+		dialogBody.style.top = '0';
+		dialogBody.style.position = 'absolute';
+		dialogBody.style.overflow = 'auto';
+		dialogBody.style.display = 'grid';
+		dialogBody.style.gridAutoFlow = 'row';
+		dialogBody.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+
+		dialog.appendChild(titleText);
+		dialog.appendChild(closeButton);
+		dialog.appendChild(dialogBody);			
+			
+		// Create input for each script setting
+		for(let ssKey in conf.scriptSettings) {
+			let ssObj = conf.scriptSettings[ssKey];
+			
+			let ssElem = document.createElement(ssObj.type == 'text' ? 'textarea' : 'input');
+			ssElem.id = 'ss-'+ssKey;
+			ssElem.placeholder = ssObj.name;
+			ssElem.value = ssObj.value;
+			ssElem.style.height = ssObj.type == 'text' ? '40px' : '20px';
+			ssElem.style.marginRight = '20px';
+			ssElem.onchange = function() { 
+				conf.scriptSettings[ssKey].value = ssObj.type == 'boolean' ? this.checked : this.value; 
+			};
+			if(ssObj.type == 'boolean') ssElem.type = 'checkbox';
+			if(ssObj.type == 'numeric') {
+				ssElem.type = 'number' ; 
+				ssElem.inputmode = 'numeric'; 
+				ssElem.onkeypress = e => { if (e.key.match(/\D/g)) { e.preventDefault();} };
+			}
+			if(ssObj.type == 'boolean') {
+				ssElem.type = 'checkbox';
+				ssElem.checked = ssObj.value;
+			} 
+			
+			let cbLabel = document.createElement('label');
+			cbLabel.for = ssElem.id;
+			cbLabel.innerHTML = ssObj.name;
+			cbLabel.title = ssObj.description;
+			
+			let ssElemContainer = document.createElement('span');
+
+			ssElemContainer.appendChild(cbLabel);
+
+			
+			if(ssObj.description.match("http")) {
+				let helpLink = document.createElement('a');
+				helpLink.innerHTML = '❓';
+				helpLink.target = '_blank';
+				helpLink.href = ssObj.description;
+				helpLink.style.textDecoration = 'none';
+				ssElem.title = ssObj.name;
+				ssElemContainer.appendChild(helpLink);
+			} else {
+				ssElem.title = ssObj.description;
+			}
+
+			ssElemContainer.appendChild(ssElem);
+			
+			dialogBody.appendChild(ssElemContainer);
+		}
+		
+		
+
+        let importExportButton = document.createElement('button');
+        importExportButton.innerHTML = "Import/export";
+        importExportButton.style.height = c_uiElemntHeight;
+        importExportButton.style.cursor = "pointer";
+        importExportButton.title = "Import or export all the data for this script (to import add previoiusly exported data to the right, to export leave it empty). Importing data will reload the page!";
+        importExportButton.onclick = exportImport;
+        let importExportData = document.createElement('input');
+        importExportData.id = 'import-export-data-input';
+        importExportData.placeholder = 'Import/export data';
+        importExportData.style.height = c_uiElemntHeightSmall;
+        importExportData.style.width = '125px';
+        importExportData.title = "Exported data will be show here, add data here to import it. Importing data will reload the page!";
+        importExportData.onfocus = function() {this.select();};
+		let importExportContainer = document.createElement('span');
+        importExportContainer.appendChild(importExportButton);
+        importExportContainer.appendChild(importExportData);
+        dialogBody.appendChild(importExportContainer);
+		
+
+		document.body.appendChild(dialog);
+	}
+
     function toggleProcessButton(p_set_processing) {
         awqLog('toggleProcessButton:' + p_set_processing);
         let pb = conf.ui.processButton;
@@ -1019,7 +1077,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
             newArray.push(newRowObject);
         }
         conf.currentQueue = newArray;
-        if(conf.ui.rememberQueue.checked) {
+        if(conf.scriptSettings.rememberQueue.value) {
             awqLog('updateQueueState: Saving current queue state '+conf.currentQueue.length);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
         } else {
@@ -1117,7 +1175,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         }
     }
 
-    function playWorkCompleteSound() { if(localStorage.awqNotificationSound == 1) c_audio_base64.play();}
+    function playWorkCompleteSound() { if(conf.scriptSettings.notificationSound) c_audio_base64.play();}
 
     function editSetting() {
 
@@ -1194,12 +1252,12 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         if(conf.ui.settingName.value.length < 1) {alert('Missing name'); return;}
         if(conf.savedSetting.hasOwnProperty(conf.ui.settingName.value)) {alert('Duplicate name'); return;}
 
-        let seettingSetName = conf.commonData.activeType + '-'+ conf.ui.settingName.value;
-        conf.savedSetting[seettingSetName] = getValueJSON();
+        let settingSetName = conf.commonData.activeType + '-'+ conf.ui.settingName.value;
+        conf.savedSetting[settingSetName] = getValueJSON();
 
         localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
 
-        awqLogPublishMsg(`Saved new setting set ` + seettingSetName);
+        awqLogPublishMsg(`Saved new setting set ` + settingSetName);
         refreshSettings();
     }
     function refreshSettings() {
@@ -1344,17 +1402,20 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
 
     function filterPrompt(p_prompt_text, p_neg) {
         let newPromptText = p_prompt_text;
-        for(let i=0; i < conf.promptFilter.length; i++) {
-            if(!conf.promptFilter[i].hasOwnProperty('pattern') ||
-               !conf.promptFilter[i].hasOwnProperty('flags') ||
-               !conf.promptFilter[i].hasOwnProperty('replace')) continue;
+		let promptFilter = conf.scriptSettings.promptFilter.value.length > 0 ? 
+			JSON.parse(conf.scriptSettings.promptFilter.value) : [];
+			
+        for(let i=0; i < promptFilter.length; i++) {
+            if(!promptFilter[i].hasOwnProperty('pattern') ||
+               !promptFilter[i].hasOwnProperty('flags') ||
+               !promptFilter[i].hasOwnProperty('replace')) continue;
 
-            let regEx = new RegExp(conf.promptFilter[i].pattern, conf.promptFilter[i].flags);
-            let tmpNewPromptText = newPromptText.replace(regEx, conf.promptFilter[i].replace);
+            let regEx = new RegExp(promptFilter[i].pattern, promptFilter[i].flags);
+            let tmpNewPromptText = newPromptText.replace(regEx, promptFilter[i].replace);
 
             if(tmpNewPromptText !== newPromptText) {
                 let changesCount = levenshteinDist(newPromptText, tmpNewPromptText);
-                awqLogPublishMsg(`Filtered ${p_neg ? '(neg)' : ''}prompt with filter (${conf.promptFilter[i].desc}), ${changesCount} char changes`);
+                awqLogPublishMsg(`Filtered ${p_neg ? '(neg)' : ''}prompt with filter (${promptFilter[i].desc}), ${changesCount} char changes`);
                 awqLog(`Filtered from:<pre>${newPromptText}</pre>to:<pre>${tmpNewPromptText}</pre>`);
                 newPromptText = tmpNewPromptText;
             }
@@ -1366,19 +1427,17 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
         let exportJSON = JSON.stringify({
             savedSetting: conf.savedSetting,
             currentQueue: conf.currentQueue,
-            notificationSound: conf.notificationSound,
-            maxOutputLines:conf.maxOutputLines,
-            autoscrollOutput:conf.autoscrollOutput,
-            promptFilter:conf.promptFilter,
+			scriptSettings: JSON.parse(localStorage.awqScriptSettings), // Use localstorage since it has filtered everything except values
             extensionScript:conf.extensionScript,
         });
-        let importJSON = conf.ui.importExportData.value;
+		let exportImportInput = document.getElementById('import-export-data-input');
+        let importJSON = exportImportInput.value;
 
         if(importJSON.length < 1) {
             awqLogPublishMsg(`Exported script data`);
-            conf.ui.importExportData.value = exportJSON;
-            conf.ui.importExportData.focus();
-            conf.ui.importExportData.select();
+            exportImportInput.value = exportJSON;
+            exportImportInput.focus();
+            exportImportInput.select();
             return;
         }
 
@@ -1393,19 +1452,10 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
             conf.ui.notificationSoundCheckbox.checked = (parsedImportJSON.awqNotificationSound == 1 ? true : false);
             conf.savedSetting = parsedImportJSON.savedSetting;
             conf.currentQueue = parsedImportJSON.currentQueue;
-            conf.notificationSound = parsedImportJSON.notificationSound;
-            conf.maxOutputLines = parsedImportJSON.maxOutputLines;
-            conf.autoscrollOutput = parsedImportJSON.autoscrollOutput;
-            conf.promptFilter = parsedImportJSON.promptFilter;
-            conf.extensionScript = parsedImportJSON.extensionScript;
-            localStorage.awqNotificationSound = parsedImportJSON.awqNotificationSound;
+            conf.scriptSettings = parsedImportJSON.scriptSettings;
+            localStorage.awqScriptSettings = parsedImportJSON.scriptSettings;
             localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
-            localStorage.awqNotificationSound = conf.notificationSound ? 1 : 0;
-            localStorage.awqMaxOutputLines = conf.maxOutputLines;
-            localStorage.awqAutoscrollOutput = conf.autoscrollOutput ? 1 : 0;
-            localStorage.awqPromptFilter = JSON.stringify(conf.promptFilter);
-            localStorage.awqextensionScript = conf.extensionScript;
             location.reload();
         }
     }
@@ -1499,7 +1549,7 @@ console.log('valueJSON'+JSON.stringify(valueJSON));
                     } else { // Inputs, Textarea
                         valueJSON[prop] = conf[type][prop].el.value;
                         if(prop == 'prompt') valueJSON[prop] = filterPrompt(valueJSON[prop]);
-                        if(prop == 'negPrompt' && conf.ui.promptFilterNeg.checked) valueJSON[prop] = filterPrompt(valueJSON[prop], true);
+                        if(prop == 'negPrompt' && conf.scriptSettings.promptFilterNegative.value) valueJSON[prop] = filterPrompt(valueJSON[prop], true);
                     }
                 } catch(e) {
                     awqLogPublishError(`Failed to retrieve settings for ${type} item ${prop} with error ${e.message}: <pre style="margin: 0;">${e.stack}</pre>`);
