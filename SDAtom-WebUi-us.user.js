@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.0
+// @version      1.2.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -232,6 +232,7 @@
         },
 		extensions: {
 			iBrowser: {
+				name:"stable-diffusion-webui-images-browser",
 				existCheck:{sel:"#tab_image_browser"},
 				guiElems: {
 					iBrowserContainer:{sel:"#tab_image_browser"},
@@ -256,7 +257,7 @@
 			
 						let currentTab = document.querySelector('#image_browser_tabs_container button.selected').innerHTML;
 						currentTab = currentTab.replace(/\s/g,'');
-						currentTab = currentTab.replace('-grids','G');
+						currentTab = currentTab.replace('-grids','G').toLowerCase();
 
 						let generationInfoValue = conf.extensions.iBrowser.guiElems[currentTab].el.value;
 						
@@ -414,7 +415,7 @@
     preAwqLog(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);	
 	
     function awqLog(p_message) {
-        if(conf.verboseLog) {
+        if(conf.scriptSettings.verboseLog.value) {
             awqLogPublishMsg(p_message, 'lightgray');
         }
     }
@@ -430,14 +431,14 @@
         line.innerHTML = '<span style="' + (p_color ? 'color:'+p_color : '') + '">' + timestamp + ': ' + p_message + '</span>';
         conf.ui.outputConsole.appendChild(line);
 
-        if(lines.length >= conf.maxOutputLines) {
+        if(lines.length >= conf.scriptSettings.maxOutputLines.value) {
             lines[0].parentNode.removeChild(lines[0]);
         }
-        if(conf.autoscrollOutput) conf.ui.outputConsole.scrollTo(0, conf.ui.outputConsole.scrollHeight);
+        if(conf.scriptSettings.autoscrollOutput.value) conf.ui.outputConsole.scrollTo(0, conf.ui.outputConsole.scrollHeight);
     }
     function awqLogPublishError(p_message) { awqLogPublishMsg(p_message, 'red') }
     window.addEventListener("error", (event) => {
-        if(conf.verboseLog) {
+        if(conf.scriptSettings.verboseLog.value) {
             awqLogPublishMsg(
                 `Javascript error (can be caused by something other than this script): ${event.message} source:${event.filename} line:${event.lineno} col:${event.colno} Error:${event.error ? JSON.stringify(event.error) : '' }`,
                 'darkorange'
@@ -445,7 +446,7 @@
         }
     },true);
     window.addEventListener("unhandledrejection", (event) => {
-        if(conf.verboseLog) {
+        if(conf.scriptSettings.verboseLog.value) {
             awqLogPublishMsg(
                 `Javascript promise error (can be caused by something other than this script): ${event.reason}`,
                 'darkorange'
@@ -454,17 +455,18 @@
     },true);
     let oldWarn = window.console.warn,oldInfo = window.console.info,oldLog = window.console.log,oldError = window.console.error;
     window.console.warn = function(p_msg) {
-        if(conf.verboseLog) awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldWarn(p_msg);
+        if(conf.scriptSettings.verboseLog.value) awqLogPublishMsg('log (warn) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldWarn(p_msg);
     }
     window.console.info = function(p_msg) {
-        if(conf.verboseLog) awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldInfo(p_msg);
+        if(conf.scriptSettings.verboseLog.value) awqLogPublishMsg('log (info) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldInfo(p_msg);
     }
     window.console.log = function(p_msg) {
-        if(conf.verboseLog) awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldLog(p_msg);
+        if(conf.scriptSettings.verboseLog.value) awqLogPublishMsg('log (log) message (can be caused by something other than this script):' + p_msg +`<br>Call stack:<pre>${getCallStack()}</pre>`, 'lightgray'); oldLog(p_msg);
     }
     // ----------------------------------------------------------------------------- Wait for content to load
     let waitForLoadInterval = setInterval(initAWQ, c_wait_tick_duration);
     function initAWQ() {
+		window.awqConf = conf;
         conf.shadowDOM.root = document.querySelector(conf.shadowDOM.sel);
         if(!conf.shadowDOM.root || !conf.shadowDOM.root.querySelector('#txt2img_prompt')) return;
         clearInterval(waitForLoadInterval);
@@ -474,17 +476,17 @@
 		// Check for extensions
 		for(let ext in conf.extensions) {
 			if(!document.querySelector(conf.extensions[ext].existCheck.sel)) {
+				preAwqLog(`Extension ${conf.extensions[ext].name} not found, disabling`);
 				conf.extensions[ext] = false;
-				preAwqLog(`Extension ${ext} not found, disabling`);
 			} else {
-				preAwqLog(`Extension ${ext} found`);
+				preAwqLog(`Extension ${conf.extensions[ext].name} found`);
 			}
 		}
 
 		loadScriptSettings();
         generateMainUI();
 
-        try { eval(conf.extensionScript);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
+        try { eval(conf.scriptSettings.extensionScript.value);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
 
         function mapElementsToConf(p_object, p_info) {
             for (let prop in p_object) {
@@ -885,10 +887,11 @@
 		localStorage.awqScriptSettings = JSON.stringify(scriptSettingsCopy);
 	}
 	
-	function loadScriptSettings() {
+	function loadScriptSettings(p_scriptSettings) {
 		if(!localStorage.hasOwnProperty("awqScriptSettings")) return;
 		awqLog('Loding saved script settings');
-		let savedSettings = JSON.parse(localStorage.awqScriptSettings);
+
+		let savedSettings = p_scriptSettings || JSON.parse(localStorage.awqScriptSettings);
 		for(let ssk in conf.scriptSettings) {
 			if(savedSettings.hasOwnProperty(ssk)) conf.scriptSettings[ssk].value =  savedSettings[ssk].value;
 		}
@@ -949,7 +952,8 @@
 			ssElem.style.height = ssObj.type == 'text' ? '40px' : '20px';
 			ssElem.style.marginRight = '20px';
 			ssElem.onchange = function() { 
-				conf.scriptSettings[ssKey].value = ssObj.type == 'boolean' ? this.checked : this.value; 
+				conf.scriptSettings[ssKey].value = ssObj.type == 'boolean' ? this.checked : this.value;
+				saveScriptSettings();
 			};
 			if(ssObj.type == 'boolean') ssElem.type = 'checkbox';
 			if(ssObj.type == 'numeric') {
@@ -1155,7 +1159,7 @@
         }
     }
 
-    function playWorkCompleteSound() { if(conf.scriptSettings.notificationSound) c_audio_base64.play();}
+    function playWorkCompleteSound() { if(conf.scriptSettings.notificationSound.value) c_audio_base64.play();}
 
     function editSetting() {
         let settingStorage = conf.ui.settingsStorage;
@@ -1407,7 +1411,6 @@
             savedSetting: conf.savedSetting,
             currentQueue: conf.currentQueue,
 			scriptSettings: JSON.parse(localStorage.awqScriptSettings), // Use localstorage since it has filtered everything except values
-            extensionScript:conf.extensionScript,
         });
 		let exportImportInput = document.getElementById('import-export-data-input');
         let importJSON = exportImportInput.value;
@@ -1419,20 +1422,18 @@
             exportImportInput.select();
             return;
         }
-
         if(!isJsonString(importJSON)) {
-            awqLogPublishMsg(`There is something wrong with the import data provided`);
+            alert(`There is something wrong with the import data provided`);
             return;
         } else if(exportJSON == importJSON) {
-            awqLogPublishMsg(`The input data is the same as the current script data`);
+            alert(`The input data is the same as the current script data`);
         } else {
             awqLog('Data has changed');
             let parsedImportJSON = JSON.parse(importJSON);
-            conf.ui.notificationSoundCheckbox.checked = (parsedImportJSON.awqNotificationSound == 1 ? true : false);
             conf.savedSetting = parsedImportJSON.savedSetting;
             conf.currentQueue = parsedImportJSON.currentQueue;
-            conf.scriptSettings = parsedImportJSON.scriptSettings;
-            localStorage.awqScriptSettings = parsedImportJSON.scriptSettings;
+            loadScriptSettings(parsedImportJSON.scriptSettings); // Load with loadScriptSettings to only replace values
+            localStorage.awqScriptSettings = JSON.stringify(parsedImportJSON.scriptSettings);
             localStorage.awqSavedSetting = JSON.stringify(conf.savedSetting);
             localStorage.awqCurrentQueue = JSON.stringify(conf.currentQueue);
             location.reload();
