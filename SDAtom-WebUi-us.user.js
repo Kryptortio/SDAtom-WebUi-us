@@ -574,8 +574,8 @@
         assignDefaultToAll.style.height = c_uiElemntHeight;
         assignDefaultToAll.style.marginRight = '10px';
         assignDefaultToAll.onclick = function() {
-            if(conf.sicriptSettings.defautQuantity.value >= 0) {
-                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.sicriptSettings.defautQuantity.value});
+            if(conf.scriptSettings.defaultQuantity.value >= 0) {
+                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.scriptSettings.defaultQuantity.value});
                 updateQueueState();
             }
         };
