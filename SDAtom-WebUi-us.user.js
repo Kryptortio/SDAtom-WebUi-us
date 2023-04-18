@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.1
+// @version      1.2.2
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -574,8 +574,8 @@
         assignDefaultToAll.style.height = c_uiElemntHeight;
         assignDefaultToAll.style.marginRight = '10px';
         assignDefaultToAll.onclick = function() {
-            if(conf.sicriptSettings.defautQuantity.value >= 0) {
-                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.sicriptSettings.defautQuantity.value});
+            if(conf.scriptSettings.defaultQuantity.value >= 0) {
+                document.querySelectorAll('.AWQ-item-quantity').forEach((inp) => {inp.value = conf.scriptSettings.defaultQuantity.value});
                 updateQueueState();
             }
         };
