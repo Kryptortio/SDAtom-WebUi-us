@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.3
+// @version      1.2.4
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -738,7 +738,6 @@
         itemType.style.display = "50px";
         itemType.style.height = c_uiElemntHeightSmall;
         itemType.style.width = "20px";
-        itemType.value = p_type || conf.commonData.activeType;
         itemType.title = "This is the type/tab for the queue item";
         itemType.disabled = true;
         let itemQuantity = document.createElement('input');
@@ -780,6 +779,12 @@
             if(newType != itemType.value) itemType.value = newType;
         }
         itemJSON.title = "This is a JSON string with all the settings to be used for this item. Can be changed while processing the queue but will fail if you enter invalid values.";
+		
+		// Set itemType.value here so we only need to fetch JSON once
+		let JSONType = itemJSON.value.match(/"type":"([^"]+)"/);
+		JSONType = JSONType ? JSONType[1] : conf.commonData.activeType;
+		itemType.value = p_type || JSONType;
+		
         let removeItem =document.createElement('button');
         removeItem.innerHTML = '❌';
         removeItem.style.height = c_uiElemntHeight;
