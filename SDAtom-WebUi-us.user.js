@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.2
+// @version      1.2.3
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -763,10 +763,10 @@
         itemJSON.classList = 'AWQ-item-JSON';
 		itemJSON.value = p_value || getValueJSON(p_type);
         if(p_overwrite_data) {
-			awqLog('appendQueueItem: Adding to queue with Overwrite button');
+			awqLog(`appendQueueItem: Adding to queue with Overwriting: ${JSON.stringify(p_overwrite_data)}`);
 			let jsonData = JSON.parse(itemJSON.value);
-			for(let setKey in jsonData) {
-				if(p_overwrite_data.hasOwnProperty(setKey)) jsonData[setKey] = p_overwrite_data[setKey];
+			for(let setKey in p_overwrite_data) {
+				jsonData[setKey] = p_overwrite_data[setKey];
 			}
 			itemJSON.value = JSON.stringify(jsonData);
 		}
