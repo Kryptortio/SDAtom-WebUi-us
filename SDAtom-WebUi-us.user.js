@@ -1360,7 +1360,7 @@
     function webUICurrentyWorkingOn(p_itemType) {
         if(p_itemType == 'i2i') {
             return conf.i2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
-        } else if (p_itemType == 't2i') {
+        } else if (p_itemType == 't2i' || p_itemType == 'iBrowser') {
             return conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         } else {
             return conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
