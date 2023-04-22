@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.4
+// @version      1.2.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -227,7 +227,7 @@
             GFPGANVis:{sel:"#extras_gfpgan_visibility input",sel2:"#extras_gfpgan_visibility [id^=range_id]"},
             CodeFormVis:{sel:"#extras_codeformer_visibility input",sel2:"#extras_codeformer_visibility [id^=range_id]"},
             CodeFormWeight:{sel:"#extras_codeformer_weight input",sel2:"#extras_codeformer_weight [id^=range_id]"},
- 
+
 
         },
 		extensions: {
@@ -254,13 +254,13 @@
 					getValueJSON: function () {
 						awqLog('iBrowser.getValueJSON: parsing data');
 						let valueJSON = {type:'t2i'};
-			
+
 						let currentTab = document.querySelector('#image_browser_tabs_container button.selected').innerHTML;
 						currentTab = currentTab.replace(/\s/g,'');
 						currentTab = currentTab.replace('-grids','G').toLowerCase();
 
 						let generationInfoValue = conf.extensions.iBrowser.guiElems[currentTab].el.value;
-						
+
 						//Used when loading prompt from image browser
 						/*
 						Kind of using the logic from generation_parameters_copypaste.py/parse_generation_parameters (but not really, because that doesn't account for Template/Negative Template)
@@ -271,7 +271,7 @@
 						Template: <template>
 						Negative Template: <negative template>
 
-						<prompt>, <negative prompt>, <template> and <negative template> can all be multiline, or missing. 
+						<prompt>, <negative prompt>, <template> and <negative template> can all be multiline, or missing.
 						Maybe assume that <prompt> is never missing?
 						*/
 						let lines = generationInfoValue.split(/\r?\n/);
@@ -373,21 +373,21 @@
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
         currentQueue: JSON.parse(localStorage.awqCurrentQueue || '[]'),
     };
-	
-	if(localStorage.hasOwnProperty("awqNotificationSound") && 
+
+	if(localStorage.hasOwnProperty("awqNotificationSound") &&
 		!localStorage.hasOwnProperty("awqScriptSettings")) { // Tmp settings migration
 		awqLog('Copying settings from old storage');
-		if (localStorage.hasOwnProperty("awqNotificationSound")) 
+		if (localStorage.hasOwnProperty("awqNotificationSound"))
 			conf.scriptSettings.notificationSound.value = localStorage.awqNotificationSound == 1 ? true : false;
-		if (localStorage.hasOwnProperty("awqAutoscrollOutput")) 
+		if (localStorage.hasOwnProperty("awqAutoscrollOutput"))
 			conf.scriptSettings.autoscrollOutput.value = localStorage.awqAutoscrollOutput == 1 ? true : false;
-		if (localStorage.hasOwnProperty("awqVerboseLog")) 
+		if (localStorage.hasOwnProperty("awqVerboseLog"))
 			conf.scriptSettings.verboseLog.value = localStorage.awqVerboseLog == 1 ? true : false;
-		if (localStorage.hasOwnProperty("awqMaxOutputLines")) 
+		if (localStorage.hasOwnProperty("awqMaxOutputLines"))
 			conf.scriptSettings.maxOutputLines.value = localStorage.awqMaxOutputLines;
-		if (localStorage.hasOwnProperty("awqPromptFilter")) 
+		if (localStorage.hasOwnProperty("awqPromptFilter"))
 			conf.scriptSettings.promptFilter.value = localStorage.awqPromptFilter;
-		if (localStorage.hasOwnProperty("awqExtensionScript")) 
+		if (localStorage.hasOwnProperty("awqExtensionScript"))
 			conf.scriptSettings.extensionScript.value = localStorage.awqExtensionScript;
 	}
     const c_emptyQueueString = 'Queue is empty';
@@ -412,8 +412,8 @@
 	function preAwqLog(p_message) {
 		console.log(`SDAtom-WebUi-us: ${p_message}`);
 	}
-    preAwqLog(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);	
-	
+    preAwqLog(`Running SDAtom-WebUi-us version ${c_scriptVersion} using ${c_scriptHandeler} with browser ${window.navigator.userAgent}`);
+
     function awqLog(p_message) {
         if(conf.scriptSettings.verboseLog.value) {
             awqLogPublishMsg(p_message, 'lightgray');
@@ -686,7 +686,7 @@
         outputConsole.style.backgroundColor = "white";
         outputConsole.style.boxShadow = 'inset 0px 1px 4px #666';
         container.appendChild(outputConsole);
-        
+
         let outputConsoleClearButton = document.createElement('button');
         outputConsoleClearButton.innerHTML = "Clear";
         outputConsoleClearButton.style.height = c_uiElemntHeight;
@@ -695,7 +695,7 @@
         outputConsoleClearButton.style.marginLeft = "10px";
         outputConsoleClearButton.title = "Clear the console above";
         container.appendChild(outputConsoleClearButton);
-        
+
 
         conf.ui.addToQueueButton = addToQueueButton;
         conf.ui.addToQueueButtonA1 = addToQueueButtonA1;
@@ -727,8 +727,8 @@
 
     function appendQueueItem(p_quantity, p_value, p_type, p_overwrite_data) {
         awqLog('appendQueueItem: quantity:' + p_quantity + ' type:' + p_type);
-        let quantity = isNaN(p_quantity) || p_quantity == null ? 
-			(parseInt(conf.ui.defaultQueueQuantity.value) > 0 ? 
+        let quantity = isNaN(p_quantity) || p_quantity == null ?
+			(parseInt(conf.ui.defaultQueueQuantity.value) > 0 ?
 				parseInt(conf.ui.defaultQueueQuantity.value) : 1) : p_quantity;
 
         let queueItem = document.createElement('div');
@@ -772,19 +772,18 @@
         itemJSON.style.width = "calc(100vw - 290px)";
         itemJSON.style.height = "18px";
         itemJSON.onchange = function() {
-            updateQueueState;
+            updateQueueState();
             // Update itemType if needed
             let newType = itemJSON.value.match(/"type":"([^"]+)"/);
             newType = newType ? newType[1] : null;
             if(newType != itemType.value) itemType.value = newType;
         }
         itemJSON.title = "This is a JSON string with all the settings to be used for this item. Can be changed while processing the queue but will fail if you enter invalid values.";
-		
-		// Set itemType.value here so we only need to fetch JSON once
+
 		let JSONType = itemJSON.value.match(/"type":"([^"]+)"/);
 		JSONType = JSONType ? JSONType[1] : conf.commonData.activeType;
 		itemType.value = p_type || JSONType;
-		
+
         let removeItem =document.createElement('button');
         removeItem.innerHTML = '❌';
         removeItem.style.height = c_uiElemntHeight;
@@ -808,7 +807,7 @@
                 awqLogPublishMsg(`Rearranged queue`);
                 updateQueueState();
             }
-            
+
         };
         let moveItemDown =document.createElement('button');
         moveItemDown.innerHTML = '⇩';
@@ -880,18 +879,18 @@
 	function saveScriptSettings() {
 		awqLog('Saving script settings');
 		let scriptSettingsCopy = structuredClone(conf.scriptSettings);
-		
+
 		// Delete data that does not need to be saved
 		for(let ssk in scriptSettingsCopy) {
 			for(let ssk2 in scriptSettingsCopy[ssk]) {
 				if(ssk2 != 'value') delete scriptSettingsCopy[ssk][ssk2];
 			}
 		}
-		
+
 		conf.ui.defaultQueueQuantity.value = conf.scriptSettings.defaultQuantity.value; // Update beacuse this one is in two places
 		localStorage.awqScriptSettings = JSON.stringify(scriptSettingsCopy);
 	}
-	
+
 	function loadScriptSettings(p_scriptSettings) {
 		if(!localStorage.hasOwnProperty("awqScriptSettings")) return;
 		awqLog('Loding saved script settings');
@@ -914,13 +913,13 @@
 		dialog.style.zIndex = '1000';
 		dialog.style.borderRadius = '15px';
 		dialog.style.boxShadow = '3px 3px 100px black,3px 3px 500px black, 3px 3px 25px black, inset 0 0 10px black';
-		
+
 		let titleText = document.createElement('span');
 		titleText.innerHTML = '<b>Script settings</b> - <i>hold your mouse over an item for a description</i>';
 		titleText.style.top = '5px';
 		titleText.style.left = '10px';
 		titleText.style.position = 'absolute';
-		
+
 		let closeButton = document.createElement('span');
 		closeButton.style.position = 'absolute';
 		closeButton.style.top = '5px';
@@ -944,43 +943,43 @@
 
 		dialog.appendChild(titleText);
 		dialog.appendChild(closeButton);
-		dialog.appendChild(dialogBody);			
-			
+		dialog.appendChild(dialogBody);
+
 		// Create input for each script setting
 		for(let ssKey in conf.scriptSettings) {
 			let ssObj = conf.scriptSettings[ssKey];
-			
+
 			let ssElem = document.createElement(ssObj.type == 'text' ? 'textarea' : 'input');
 			ssElem.id = 'ss-'+ssKey;
 			ssElem.placeholder = ssObj.name;
 			ssElem.value = ssObj.value;
 			ssElem.style.height = ssObj.type == 'text' ? '40px' : '20px';
 			ssElem.style.marginRight = '20px';
-			ssElem.onchange = function() { 
+			ssElem.onchange = function() {
 				conf.scriptSettings[ssKey].value = ssObj.type == 'boolean' ? this.checked : this.value;
 				saveScriptSettings();
 			};
 			if(ssObj.type == 'boolean') ssElem.type = 'checkbox';
 			if(ssObj.type == 'numeric') {
-				ssElem.type = 'number' ; 
-				ssElem.inputmode = 'numeric'; 
+				ssElem.type = 'number' ;
+				ssElem.inputmode = 'numeric';
 				ssElem.onkeypress = e => { if (e.key.match(/\D/g)) { e.preventDefault();} };
 			}
 			if(ssObj.type == 'boolean') {
 				ssElem.type = 'checkbox';
 				ssElem.checked = ssObj.value;
-			} 
-			
+			}
+
 			let cbLabel = document.createElement('label');
 			cbLabel.for = ssElem.id;
 			cbLabel.innerHTML = ssObj.name;
 			cbLabel.title = ssObj.description;
-			
+
 			let ssElemContainer = document.createElement('span');
 
 			ssElemContainer.appendChild(cbLabel);
 
-			
+
 			if(ssObj.description.match("http")) {
 				let helpLink = document.createElement('a');
 				helpLink.innerHTML = '❓';
@@ -994,11 +993,11 @@
 			}
 
 			ssElemContainer.appendChild(ssElem);
-			
+
 			dialogBody.appendChild(ssElemContainer);
 		}
-		
-		
+
+
 
         let importExportButton = document.createElement('button');
         importExportButton.innerHTML = "Import/export";
@@ -1017,7 +1016,7 @@
         importExportContainer.appendChild(importExportButton);
         importExportContainer.appendChild(importExportData);
         dialogBody.appendChild(importExportContainer);
-		
+
 
 		document.body.appendChild(dialog);
 	}
@@ -1102,7 +1101,7 @@
             conf.commonData.activeType = 'other';
             conf.ui.unsupportedButton.style.display = 'block';
         }
-		
+
 		if(conf.commonData.activeType != 'other') {
             conf.ui.addToQueueButton.style.display = 'block';
             conf.ui.addToQueueButtonA1.style.display = 'block';
@@ -1390,9 +1389,9 @@
 
     function filterPrompt(p_prompt_text, p_neg) {
         let newPromptText = p_prompt_text;
-		let promptFilter = conf.scriptSettings.promptFilter.value.length > 0 ? 
+		let promptFilter = conf.scriptSettings.promptFilter.value.length > 0 ?
 			JSON.parse(conf.scriptSettings.promptFilter.value) : [];
-			
+
         for(let i=0; i < promptFilter.length; i++) {
             if(!promptFilter[i].hasOwnProperty('pattern') ||
                !promptFilter[i].hasOwnProperty('flags') ||
@@ -1553,7 +1552,14 @@
         let waitForThisContainer;
         awqLog('loadJson: ' + type);
 
-        setGradVal(conf.commonData.sdModelCheckpoint.gradEl, inputJSONObject.sdModelCheckpoint);
+        let currentModel = getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
+        if(currentModel == inputJSONObject.sdModelCheckpoint) {
+            // No action needed
+        } else if(conf.commonData.sdModelCheckpoint.gradEl.props.choices.includes(inputJSONObject.sdModelCheckpoint)) { // Check if model exists
+            setGradVal(conf.commonData.sdModelCheckpoint.gradEl, inputJSONObject.sdModelCheckpoint);
+        } else {
+            awqLogPublishError(`Model ${inputJSONObject.sdModelCheckpoint} was not found, using current model ${currentModel}`);
+        }
 
         if(conf.commonData.activeType != inputJSONObject.type) await switchTabAndWait(inputJSONObject.type); // Switch tab?
 
