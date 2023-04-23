@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.5
+// @version      1.2.6
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -427,6 +427,7 @@
         }
         let lines = conf.ui.outputConsole.querySelectorAll('div');
         let line = document.createElement('div');
+		line.className = 'awq-console-line';
         const timestamp = (new Date()).toLocaleTimeString([], {hour: '2-digit',minute: '2-digit',second: '2-digit', hour12: false});
         line.innerHTML = '<span style="' + (p_color ? 'color:'+p_color : '') + '">' + timestamp + ': ' + p_message + '</span>';
         conf.ui.outputConsole.appendChild(line);
@@ -542,7 +543,40 @@
     }
 
     function generateMainUI() {
+		let awqCSSElem = document.createElement('style');
+		awqCSSElem.innerHTML = `
+#AWQ-container button {
+	border:var(--button-border-width) solid var(--button-secondary-border-color);
+	background:var(--button-secondary-background-fill);
+	color:var(--button-secondary-text-color);
+}
+#AWQ-container input, #AWQ-container select, #AWQ-container .awq-console-line,
+#awq-script-settings-popup input, #awq-script-settings-popup textarea {
+	box-shadow: var(--input-shadow);
+	border: var(--input-border-width) solid var(--input-border-color);
+	border-radius: var(--input-radius);
+	background: var(--input-background-fill);
+	color: var(--body-text-color);
+}
+#AWQ-container input.completed-queue-item {
+	background:var(--button-secondary-background-fill);
+	color:var(--button-secondary-text-color);
+}
+#AWQ-container .awq-console-line {
+	border-radius: unset;
+}
+#awq-script-settings-popup {
+	background:var(--background-fill-primary);
+}
+#awq-script-settings-popup label, #awq-script-settings-popup span { 
+	color: var(--block-title-text-color);
+}
+`;
+		document.head.appendChild(awqCSSElem);
+
         let container = document.createElement('div');
+        container.id = 'AWQ-container';
+        container.className = document.querySelector('gradio-app > div').classList.contains('dark') ? 'dark' : '';
         container.style.width = c_innerUIWidth;
         container.style.border = "1px solid white";
         container.style.position = "relative";
@@ -683,7 +717,7 @@
         outputConsole.style.marginRight = "15px";
         outputConsole.style.height = (16*10)+"px";
         outputConsole.style.overflow = "auto";
-        outputConsole.style.backgroundColor = "white";
+        //outputConsole.style.backgroundColor = "white";
         outputConsole.style.boxShadow = 'inset 0px 1px 4px #666';
         container.appendChild(outputConsole);
 
@@ -742,9 +776,9 @@
         itemType.disabled = true;
         let itemQuantity = document.createElement('input');
         function updateItemQuantityBG() {
-            if(itemQuantity.value.length == 0) { itemQuantity.style.backgroundColor = 'red'; }
-            else if(itemQuantity.value < 1) { itemQuantity.style.backgroundColor = '#c2ffc2'; }
-            else if(itemQuantity.value > 0) { itemQuantity.style.backgroundColor = 'white'; }
+            if(itemQuantity.value.length == 0) { itemQuantity.style.color = 'red'; }
+            else if(itemQuantity.value < 1) { itemQuantity.style.color = 'rgb(0, 225, 0)'; itemQuantity.classList.add('completed-queue-item') }
+            else if(itemQuantity.value > 0) { itemQuantity.style.color = 'white'; itemQuantity.classList.remove('completed-queue-item')}
         }
         itemQuantity.classList = 'AWQ-item-quantity';
         itemQuantity.value = quantity;
@@ -903,13 +937,14 @@
 
 	function openScriptSettingsPopup() {
 		let dialog = document.createElement('span');
+		dialog.id = 'awq-script-settings-popup';
+		dialog.className = document.querySelector('gradio-app > div').classList.contains('dark') ? 'dark' : '';
 		dialog.style.minWidth = '90%';
 		dialog.style.minHeight = '90%';
 		dialog.style.marginLeft = '5%';
 		dialog.style.marginTop = '5%';
 		dialog.style.top = '0';
 		dialog.style.position = 'fixed';
-		dialog.style.backgroundColor = 'white';
 		dialog.style.zIndex = '1000';
 		dialog.style.borderRadius = '15px';
 		dialog.style.boxShadow = '3px 3px 100px black,3px 3px 500px black, 3px 3px 25px black, inset 0 0 10px black';
