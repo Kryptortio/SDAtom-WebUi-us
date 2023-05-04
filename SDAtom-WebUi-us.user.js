@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.6
+// @version      1.2.7
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -545,6 +545,9 @@
     function generateMainUI() {
 		let awqCSSElem = document.createElement('style');
 		awqCSSElem.innerHTML = `
+#AWQ-container {
+	background:var(--background-fill-primary);
+}
 #AWQ-container button {
 	border:var(--button-border-width) solid var(--button-secondary-border-color);
 	background:var(--button-secondary-background-fill);
@@ -568,7 +571,7 @@
 #awq-script-settings-popup {
 	background:var(--background-fill-primary);
 }
-#awq-script-settings-popup label, #awq-script-settings-popup span { 
+#awq-script-settings-popup label, #awq-script-settings-popup span {
 	color: var(--block-title-text-color);
 }
 `;
@@ -1080,7 +1083,7 @@
             awqLogPublishMsg('Processing <b>ended</b>');
             conf.commonData.processing = false;
             conf.commonData.previousTaskStartTime = null;
-            pb.style.background = 'buttonface';
+            pb.style.background = null;
             pb.innerHTML = c_processButtonText;
         }
     }
