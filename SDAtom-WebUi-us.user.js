@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.7
+// @version      1.2.8
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -929,7 +929,7 @@
 	}
 
 	function loadScriptSettings(p_scriptSettings) {
-		if(!localStorage.hasOwnProperty("awqScriptSettings")) return;
+		if(!localStorage.hasOwnProperty("awqScriptSettings") || !isJsonString(localStorage.awqScriptSettings)) return;
 		awqLog('Loding saved script settings');
 
 		let savedSettings = p_scriptSettings || JSON.parse(localStorage.awqScriptSettings);
