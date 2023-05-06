@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.8
+// @version      1.2.9
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -1118,7 +1118,7 @@
 
         let workingOnI2I = conf.i2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         let workingOnT2I = conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
-        let workingOnExt = conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
+        let workingOnExt = conf.ext.controls.loadingElement.el.innerHTML.length > 0;
 
         // Hide all buttons by default, and then show the right one
         conf.ui.addToQueueButton.style.display = 'none'
@@ -1405,7 +1405,7 @@
         } else if (p_itemType == 't2i') {
             return conf.t2i.controls.skipButton.el.getAttribute('style') == 'display: block;';
         } else {
-            return conf.ext.controls.loadingElement.el.querySelectorAll('.z-20').length > 0;
+            return conf.ext.controls.loadingElement.el.innerHTML.length > 0;
         }
     }
 
