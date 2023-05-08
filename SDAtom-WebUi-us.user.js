@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.2.9
+// @version      1.3.0
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -1592,9 +1592,11 @@
 
         let currentModel = getGradVal(conf.commonData.sdModelCheckpoint.gradEl);
         if(currentModel == inputJSONObject.sdModelCheckpoint) {
-            // No action needed
+            awqLog('loadJson: Correct model already loaded: ' + currentModel);// No action needed
         } else if(conf.commonData.sdModelCheckpoint.gradEl.props.choices.includes(inputJSONObject.sdModelCheckpoint)) { // Check if model exists
+            awqLog('loadJson: Trying to load model: ' + inputJSONObject.sdModelCheckpoint);
             setGradVal(conf.commonData.sdModelCheckpoint.gradEl, inputJSONObject.sdModelCheckpoint);
+			setCheckpointWithPost(inputJSONObject.sdModelCheckpoint); // Only setting gradio config no longer works?
         } else {
             awqLogPublishError(`Model ${inputJSONObject.sdModelCheckpoint} was not found, using current model ${currentModel}`);
         }
@@ -1665,6 +1667,15 @@
 				childList: true,
 				subtree: true
 			});
+		});
+	}
+	function setCheckpointWithPost(p_target_cp) {
+		awqLog('setCheckpointWithPost: '+ p_target_cp);
+		fetch("/run/predict", {
+			method: "POST",
+			headers: {"Content-Type": "application/json"},
+			redirect: "follow", 
+			body: `{"fn_index":232,"data":["${p_target_cp}"],"event_data":null,"session_hash":"trlwn215an"}`
 		});
 	}
 
