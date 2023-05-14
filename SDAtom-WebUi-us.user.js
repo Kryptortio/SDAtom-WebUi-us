@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.1
+// @version      1.3.2
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -13,7 +13,7 @@
 (function() {
     'use strict';
 
-    const c_scriptVersion = typeof GM_info == 'undefined' ? '1.3.1' : GM_info.script.version;
+    const c_scriptVersion = typeof GM_info == 'undefined' ? '1.3.2' : GM_info.script.version;
     const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not user script)' : GM_info.scriptHandler;
 
     // ----------------------------------------------------------------------------- Config
@@ -1672,6 +1672,7 @@
 	}
 	function setCheckpointWithPost(p_target_cp) {
 		awqLog('setCheckpointWithPost: '+ p_target_cp);
+        let targetCheckpoint = p_target_cp.replace('/','//').replace('\\','\\\\');
 
         // Try to find fn_index for the switch checkpoint "function"
         let checkPointGradioElemId = conf.commonData.sdModelCheckpoint.gradEl.id;
@@ -1688,7 +1689,7 @@
 			method: "POST",
 			headers: {"Content-Type": "application/json"},
 			redirect: "follow",
-			body: `{"fn_index":${fnIndex},"data":["${p_target_cp}"],"event_data":null,"session_hash":"trlwn215an"}`
+			body: `{"fn_index":${fnIndex},"data":["${targetCheckpoint}"],"event_data":null,"session_hash":"trlwn215an"}`
 		}).then(response => {
             awqLog(`setCheckpointWithPost: repsonse: ${response.status}-${response.statusText}: ${JSON.stringify(response.json())}`);
         }).catch(error => {
