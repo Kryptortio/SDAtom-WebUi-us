@@ -20,6 +20,16 @@ After you have installed an extension simply [open the script](https://raw.githu
 
 The script assumes you are running the web interface on the url http://127.0.0.1:7860/ if you are using another url you can open the script yourself and just copy or modify the //match row to match the url you are using.
 
+# Updating
+
+Hopefully the script will update autmatically but if the script doesn't have [the latest version](https://github.com/Kryptortio/SDAtom-WebUi-us/blob/main/SDAtom-WebUi-us.user.js#L4) then it can be updated manually.
+
+1. (Extension for AUTOMATIC1111) click `Extensions` >  `Check for updates` > `Apply and restart UI`.
+
+2. (Bookmarklet) Clear browser cache.
+
+3. (Userscript) Click this [script link](https://raw.githubusercontent.com/Kryptortio/SDAtom-WebUi-us/main/SDAtom-WebUi-us.user.js) and reinstall it.
+
 # Usage
 
 * Change the prompt and other settings to your liking
@@ -70,13 +80,13 @@ Steps to try to fix issues
 Steps to try to find the cause of issues
 
 * Check the for errors in the output console (big white box at the bottom).
-* Activate verbose at the bottom reload the page and try again, are you seeing any errors in the optput console now?
+* Activate verbose by clicking `Script settings` and then the `Verbose console` checkbox, reload the page and try again, are you seeing any errors in the optput console now?
 * Press F12 then go to the console tab and reload the page, do you see any errors in there?
 
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working (1.1.1 [5ab7f213bec2f816f9c5644becb32eb72c8ffb89](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/5ab7f213bec2f816f9c5644becb32eb72c8ffb89))
+Latest commit (version of AUTOMATIC1111) confirmed to be working (1.2.0 [b08500cec8a791ef20082628b49b17df833f5dda](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/b08500cec8a791ef20082628b49b17df833f5dda))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.0
+// @version      1.3.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -12,6 +12,9 @@
 // ==/UserScript==
 (function() {
     'use strict';
+
+    const c_scriptVersion = typeof GM_info == 'undefined' ? '1.3.1' : GM_info.script.version;
+    const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not user script)' : GM_info.scriptHandler;
 
     // ----------------------------------------------------------------------------- Config
     let conf = {
@@ -405,10 +408,6 @@
     const c_wait_tick_duration = 200;
 
     // ----------------------------------------------------------------------------- Logging
-    const c_scriptVersion = typeof GM_info == 'undefined' ? new Date().toUTCString() : GM_info.script.version;
-    const c_scriptHandeler = typeof GM_info == 'undefined' ? '(not user script)' : GM_info.scriptHandler;
-
-
 	function preAwqLog(p_message) {
 		console.log(`SDAtom-WebUi-us: ${p_message}`);
 	}
@@ -486,6 +485,8 @@
 
 		loadScriptSettings();
         generateMainUI();
+
+        try { throw new Error(); } catch(e) { awqLog(`initAWQ: stack = ${e.stack.replace(/^(.*?)\binitAWQ/s,'')}`) }
 
         try { eval(conf.scriptSettings.extensionScript.value);} catch(e) { awqLogPublishMsg(`Failed to load extension script, error: <pre>${e.message} l:${e.lineNumber} c:${e.columnNumber}\n${e.stack}</pre>`,'darkorange')}
 
@@ -1671,12 +1672,28 @@
 	}
 	function setCheckpointWithPost(p_target_cp) {
 		awqLog('setCheckpointWithPost: '+ p_target_cp);
+
+        // Try to find fn_index for the switch checkpoint "function"
+        let checkPointGradioElemId = conf.commonData.sdModelCheckpoint.gradEl.id;
+        let fnIndex = window.gradio_config.dependencies.filter(comp => comp.inputs[0] == checkPointGradioElemId);
+        fnIndex = fnIndex ? window.gradio_config.dependencies.indexOf(fnIndex[0]) : null;
+        if(fnIndex) {
+            awqLog('setCheckpointWithPost: found fn_index '+ fnIndex);
+        } else {
+            awqLogPublishError('setCheckpointWithPost: failed to find fn_index for model change');
+            return;
+        }
+
 		fetch("/run/predict", {
 			method: "POST",
 			headers: {"Content-Type": "application/json"},
-			redirect: "follow", 
-			body: `{"fn_index":232,"data":["${p_target_cp}"],"event_data":null,"session_hash":"trlwn215an"}`
-		});
+			redirect: "follow",
+			body: `{"fn_index":${fnIndex},"data":["${p_target_cp}"],"event_data":null,"session_hash":"trlwn215an"}`
+		}).then(response => {
+            awqLog(`setCheckpointWithPost: repsonse: ${response.status}-${response.statusText}: ${JSON.stringify(response.json())}`);
+        }).catch(error => {
+            awqLog(`setCheckpointWithPost: error: ${JSON.stringify(error)}`);
+        });;
 	}
 
     function triggerChange(p_elem) {
