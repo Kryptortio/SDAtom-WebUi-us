@@ -6,7 +6,7 @@ This is a [user script](https://en.wikipedia.org/wiki/Userscript) that adds a pr
 
 # Installation
 
-1. [Install as an WebUi extension](https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext#installation), Open the webui and go to the **Extensions** tab, then **Install from URL** and enter the url to the extension repo (https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext) and then click install.
+1. [Install as an WebUi extension](https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext#installation), Open the webui and go to the **Extensions** tab, you can find the extension under **Available** > **Web UI client queue**. You can also use **Install from URL** and enter the url to the extension repo (https://github.com/Kryptortio/SDAtom-WebUi-client-queue-ext) and then click install.
 
 2. [Run script without installing](https://kryptortio.github.io/SDAtom-WebUi-us/bookmarklet.html)
 
