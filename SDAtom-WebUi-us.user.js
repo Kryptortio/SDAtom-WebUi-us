@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.3
+// @version      1.3.4
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -534,7 +534,7 @@
         button.style.position = 'fixed';
         button.style.top = top + 'px';
         button.style.right = right ? right + 'px' : 0;
-        button.style.opacity = 0.2;
+        button.style.opacity = 0.7;
         button.onclick = onclick;
         button.style.cursor = "pointer";
         button.title = title;
