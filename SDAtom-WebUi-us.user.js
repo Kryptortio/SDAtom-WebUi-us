@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.4
+// @version      1.3.5
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -372,6 +372,7 @@
 			overwriteQueueSettings1:{name:"Alt 1 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 1 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"768","height":"768"}'},
 			overwriteQueueSettings2:{name:"Alt 2 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 2 button to add to queue (same format as in the queue)", type:"text",value:'{"width":"1024","height":"1024"}'},
 			overwriteQueueSettings3:{name:"Alt 3 overwrite", description:"Add settings you want to overwrite the current settings with when you click the Alt 3 button to add to queue (same format as in the queue)", type:"text",value:'{"sample":"20","sampleMethod":"Euler a","width":"512","height":"512","restoreFace": false,"tiling": false,"batchCount": "1","batchSize": "1","cfg": "7","seed": "-1","extra": false,  "varSeed": "-1","varStr": "0"}'},
+            buttonOpacity:{name:"Button transparency", description:"Change how visible the floating buttons in the corner should be", type:"numeric",value:0.7},
 		},
         savedSetting: JSON.parse(localStorage.awqSavedSetting || '{}'),
         currentQueue: JSON.parse(localStorage.awqCurrentQueue || '[]'),
@@ -534,11 +535,12 @@
         button.style.position = 'fixed';
         button.style.top = top + 'px';
         button.style.right = right ? right + 'px' : 0;
-        button.style.opacity = 0.7;
+        button.style.opacity = conf.scriptSettings.buttonOpacity.value;
         button.onclick = onclick;
         button.style.cursor = "pointer";
         button.title = title;
         button.style.display = 'none';
+        button.classList.add('awq-hover-button');
         container.appendChild(button);
         return button;
     }
@@ -989,7 +991,7 @@
 			let ssObj = conf.scriptSettings[ssKey];
 
 			let ssElem = document.createElement(ssObj.type == 'text' ? 'textarea' : 'input');
-			ssElem.id = 'ss-'+ssKey;
+			ssElem.id = 'awq-ss-'+ssKey;
 			ssElem.placeholder = ssObj.name;
 			ssElem.value = ssObj.value;
 			ssElem.style.height = ssObj.type == 'text' ? '40px' : '20px';
@@ -1058,6 +1060,20 @@
 
 
 		document.body.appendChild(dialog);
+
+
+        // Customize behaviour of the opacity button to show immediate effect
+        let opacityButton = document.getElementById('awq-ss-buttonOpacity');
+        opacityButton.type = 'range';
+        opacityButton.min = 0;
+        opacityButton.max = 1;
+        opacityButton.step = 0.1;
+        opacityButton.onchange = function() {
+            document.querySelectorAll('.awq-hover-button').forEach(function(elem) {
+                conf.scriptSettings.buttonOpacity.value = opacityButton.value;
+                elem.style.opacity = conf.scriptSettings.buttonOpacity.value;
+            });
+        };
 	}
 
     function toggleProcessButton(p_set_processing) {
