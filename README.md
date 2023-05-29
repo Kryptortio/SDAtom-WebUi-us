@@ -76,6 +76,7 @@ Steps to try to fix issues
 * Check the [Limitations section](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations) to see if your version matches the commit listed there, so that you haven't updated to a new version that is not yet supported. Newer versions of AUTOMATIC1111 might work fine but sometimes they change something that breaks the script.
 	* If you want to try to go to a specific version of AUTOMATIC1111 you can use the command `git checkout ` followed by the id you want to use (e.g. the one listed under [limitations](https://github.com/Kryptortio/SDAtom-WebUi-us#limitations))
 * When updating the script your old queue entries might not work fully anymore (if the gui has changed). Then you need to load the entry manually and check that every setting gets loaded, manually set any that won't load anymore and then readd it to the queue.
+* If nothing else works **to reset the script/extension** press F12 to open the developer tools, then go to the Console tab and paste this `delete localStorage.awqSavedSetting; delete localStorage.awqCurrentQueue;` then press enter and reload the page. If you want you can copy the data first with the commands `localStorage.awqSavedSetting` and `localStorage.awqCurrentQueue` after each command you can copy the output.
 
 Steps to try to find the cause of issues
 
