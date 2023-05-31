@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.5
+// @version      1.3.7
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -407,6 +407,7 @@
     const c_extraResizeModeScaleByType = 1;
     const c_extraResizeModeScaleToType = 2;
     const c_wait_tick_duration = 200;
+    const c_any_value = '<ANY VALUE>';
 
     // ----------------------------------------------------------------------------- Logging
 	function preAwqLog(p_message) {
@@ -1057,6 +1058,191 @@
         importExportContainer.appendChild(importExportButton);
         importExportContainer.appendChild(importExportData);
         dialogBody.appendChild(importExportContainer);
+
+
+
+        //                                  *** Search & Replace ***              START
+        // Add replace in queue function GUI
+        let collectedAttributes = {};
+        let anyOption = document.createElement('option');
+        anyOption.value = c_any_value;
+        conf.currentQueue.map(el => { // Fetch all attributes and values currently in queue
+            let queueObject = JSON.parse(el.value);
+            Object.keys(queueObject).forEach(function(key,index) {
+                if(!collectedAttributes[key]) collectedAttributes[key] = {};
+                collectedAttributes[key][queueObject[key]] = '';
+            });
+        });
+        let componentOptions = [];
+        window.gradio_config.components.forEach(el => {
+            if(el.props && el.props.choices) {
+                componentOptions.push(el.props.choices);
+            }
+        });
+
+        let replaceLabel = document.createElement('label');
+        replaceLabel.innerHTML = 'Search and replace';
+        replaceLabel.style.display = 'block';
+        replaceLabel.title = 'Here you can search for values in the queue and replace them with something else';
+        let replaceAttributeSelectorLabel = document.createElement('label');
+        replaceAttributeSelectorLabel.innerHTML = 'Attribute';
+        replaceAttributeSelectorLabel.title = 'Choose the attribute to replace inside of (<ANY_VALUE> to replace in any attribute)';
+        let replaceAttributeSelector = document.createElement('input');
+        replaceAttributeSelector.setAttribute('list','awq-replace-attrib-dataset');
+        replaceAttributeSelector.className = 'awq-right-align-placeholder';
+        replaceAttributeSelector.placeholder='▼';
+        replaceAttributeSelector.type = 'text';
+        replaceAttributeSelector.title = replaceAttributeSelectorLabel.title;
+        replaceAttributeSelector.onfocus = function() {this.select();};
+        let replaceAttributeSelectorDataset = document.createElement('datalist');
+        replaceAttributeSelectorDataset.id = 'awq-replace-attrib-dataset';
+        replaceAttributeSelectorDataset.appendChild(anyOption);
+        Object.keys(collectedAttributes).forEach(function(key,index) { // Add all attributes from queue
+            let attribOption = document.createElement('option');
+            attribOption.value = key;
+            replaceAttributeSelectorDataset.appendChild(attribOption);
+
+        });
+        let replaceValueSelectorLabel = document.createElement('label');
+        replaceValueSelectorLabel.innerHTML = 'Old value';
+        replaceValueSelectorLabel.style.display = 'block';
+        replaceValueSelectorLabel.title = 'Find this value and replace it with the one below (<ANY_VALUE> to replace anything)';
+        let replaceValueSelector = document.createElement('input');
+        replaceValueSelector.setAttribute('list','awq-replace-value-dataset');
+        replaceValueSelector.className = 'awq-right-align-placeholder';
+        replaceValueSelector.placeholder='▼';
+        replaceValueSelector.type = 'text';
+        replaceValueSelector.title = replaceValueSelectorLabel.title;
+        replaceValueSelector.onfocus = function() {this.select();};
+        let replaceValueSelectorDataset = document.createElement('datalist');
+        replaceValueSelectorDataset.id = 'awq-replace-value-dataset';
+        let replaceContainer = document.createElement('span');
+        let replaceNewValueSelectorLabel = document.createElement('label');
+        replaceNewValueSelectorLabel.innerHTML = 'New value';
+        replaceNewValueSelectorLabel.style.display = 'block';
+        let replaceNewValueSelector = document.createElement('input');
+        replaceNewValueSelector.setAttribute('list','awq-replace-new-value-dataset');
+        replaceNewValueSelector.className = 'awq-right-align-placeholder';
+        replaceNewValueSelector.placeholder='▼';
+        replaceNewValueSelector.type = 'text';
+        replaceNewValueSelector.title = 'The value to replace with';
+        replaceNewValueSelector.onfocus = function() {this.select();};
+        let replaceNewValueSelectorDataset = document.createElement('datalist');
+        replaceNewValueSelectorDataset.id = 'awq-replace-new-value-dataset';
+
+        let replaceButton = document.createElement('button');
+        replaceButton.innerHTML = "Replace";
+
+        replaceContainer.appendChild(replaceLabel);
+        replaceContainer.appendChild(replaceAttributeSelectorLabel);
+        replaceContainer.appendChild(replaceAttributeSelector);
+        replaceContainer.appendChild(replaceAttributeSelectorDataset);
+        replaceContainer.appendChild(replaceValueSelectorLabel);
+        replaceContainer.appendChild(replaceValueSelector);
+        replaceContainer.appendChild(replaceValueSelectorDataset);
+        replaceContainer.appendChild(replaceNewValueSelectorLabel);
+        replaceContainer.appendChild(replaceNewValueSelector);
+        replaceContainer.appendChild(replaceNewValueSelectorDataset);
+        replaceContainer.appendChild(replaceButton);
+        dialogBody.appendChild(replaceContainer);
+
+        function updateReplaceValueSelectorDataset() {
+            let foundValues = collectedAttributes[replaceAttributeSelector.value];
+            replaceValueSelectorDataset.innerHTML = '';
+            replaceValueSelectorDataset.appendChild(anyOption.cloneNode());
+            if(foundValues) {
+                replaceValueSelectorDataset.innerHTML = '';
+                replaceValueSelectorDataset.appendChild(anyOption.cloneNode());
+                Object.keys(foundValues).forEach(function(key,index) { // Add all possible values for currently selected attribute
+                    let valueOption = document.createElement('option');
+                    valueOption.value = key;
+                    replaceValueSelectorDataset.appendChild(valueOption);
+                });
+            } else {
+                Object.keys(collectedAttributes).forEach(function(key,index) {
+                    let attrib = collectedAttributes[key];
+                    Object.keys(attrib).forEach(function(innerKey,innerIndex) {
+                        let valueOption = document.createElement('option');
+                        valueOption.value = innerKey;
+                        replaceValueSelectorDataset.appendChild(valueOption);
+                    });
+                });
+            }
+        }
+        function updateReplaceNewValueSelectorDataset() {
+            let matchingValues = [];
+            // Any components that has the option we are trying to replace?
+            componentOptions.forEach(arr => { if(arr.includes(replaceValueSelector.value)) matchingValues.push(arr) });
+
+            // If not add all their options
+            if(matchingValues.length == 0) {
+                matchingValues = [...componentOptions];
+            }
+
+            // Remove duplicates and replace dataset options
+            replaceNewValueSelectorDataset.innerHTML = '';
+            [...new Set(matchingValues.flat())].forEach(el => {
+                let valueOption = document.createElement('option');
+                valueOption.value = el;
+                replaceNewValueSelectorDataset.appendChild(valueOption);
+            });
+        }
+        updateReplaceNewValueSelectorDataset();
+
+        replaceAttributeSelector.onchange = function() { updateReplaceValueSelectorDataset(); }
+        replaceValueSelector.onchange = function() { updateReplaceNewValueSelectorDataset(); }
+        updateReplaceValueSelectorDataset();
+
+        // Handle clicking the search and replace button
+        replaceButton.onclick = function() {
+            let attributeValue = replaceAttributeSelector.value
+            let anyAttribute = attributeValue == c_any_value;
+            let oldValue = replaceValueSelector.value;
+            let anyOldValue = oldValue == c_any_value;
+            let currentQueue = conf.currentQueue;
+            let newValue = replaceNewValueSelector.value;
+
+            Object.keys(currentQueue).forEach(function(key,index) { // Loop queue entries
+                let queueElentry = JSON.parse(currentQueue[key].value);
+                if(anyAttribute) {
+                    Object.keys(queueElentry).forEach(function(keyInner,indexInner) { // Loop queue entry attributes
+                        if(anyOldValue) {
+                            // Replace everything with the new value (why are you doing this?)
+                            if(newValue != queueElentry[keyInner]) awqLog(`replaceButton: updated queue item ${key} attribute ${keyInner} to ${newValue}`);
+                            queueElentry[keyInner] = newValue;
+                        } else {
+                            // Search and replace in all attributes
+                            let replacedValue = queueElentry[keyInner].replaceAll ? queueElentry[keyInner].replaceAll(oldValue,newValue) : queueElentry[keyInner];
+                            if(replacedValue != queueElentry[keyInner]) awqLog(`replaceButton: updated queue item ${key} attribute ${keyInner} to ${replacedValue}`);
+                            queueElentry[keyInner] = replacedValue;
+                        }
+                    });
+                } else {
+                    if(anyOldValue) {
+                        // Replace all values for this attribute
+                        if(newValue != queueElentry[attributeValue]) awqLog(`replaceButton: updated queue item ${key} attribute ${attributeValue} to ${newValue}`);
+                        queueElentry[attributeValue] = newValue;
+                    } else {
+                        // Replace string in specific attribute
+                        let replacedValue = queueElentry[attributeValue].replaceAll(oldValue,newValue);
+                        if(replacedValue != queueElentry[attributeValue]) awqLog(`replaceButton: updated queue item ${key} attribute ${attributeValue} to ${replacedValue}`);
+                        queueElentry[attributeValue] = replacedValue;
+                    }
+                }
+                let newJson = JSON.stringify(queueElentry);
+
+                currentQueue[key].value = JSON.stringify(queueElentry);
+            });
+
+            // Update state
+            let queueElems = conf.ui.queueContainer.querySelectorAll('.AWQ-item-JSON');
+            for(let i=0; i < currentQueue.length; i++) {
+                queueElems[i].value = currentQueue[i].value;
+            }
+            updateQueueState();
+        }
+
+        //                                  *** Search & Replace ***              STOP
 
 
 		document.body.appendChild(dialog);
