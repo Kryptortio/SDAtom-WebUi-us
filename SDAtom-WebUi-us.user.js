@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.3.7
+// @version      1.4.0
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -46,10 +46,10 @@
             width:  {sel:"#txt2img_width [id^=range_id]",sel2:"#txt2img_width input"},
             height: {sel:"#txt2img_height [id^=range_id]",sel2:"#txt2img_height input"},
 
-            restoreFace: {sel:"#txt2img_restore_faces input"},
-            tiling: {sel:"#txt2img_tiling input"},
+            restoreFace: {sel:"#txt2img_settings #setting_face_restoration input"},
+            tiling: {sel:"#txt2img_settings #setting_tiling input"},
 
-            highresFix: {sel:"#txt2img_enable_hr input"},
+            highresFix: {sel:"#txt2img_hr"},
             hrFixUpscaler: {grad:"txt2img_hr_upscaler"},
             hrFixSteps: {sel:"#txt2img_hires_steps [id^=range_id]",sel2:"#txt2img_hires_steps input"},
             hrFixdenoise: {sel:"#txt2img_denoising_strength [id^=range_id]",sel2:"#txt2img_denoising_strength input"},
@@ -72,20 +72,20 @@
 
             script: {grad:"script_list",gradIndex:0},
 
-            scriptPromptMatrixPutVar: {sel:"#script_txt2txt_prompt_matrix_put_at_start input"},
-            scriptPromptMatrixUseDiff: {sel:"#script_txt2txt_prompt_matrix_different_seeds input"},
+            scriptPromptMatrixPutVar: {sel:"#script_txt2img_prompt_matrix_put_at_start input"},
+            scriptPromptMatrixUseDiff: {sel:"#script_txt2img_prompt_matrix_different_seeds input"},
 
-            scriptXYZXtype:{grad:"script_txt2txt_xyz_plot_x_type"},
-            scriptXYZXVals:{sel:"#script_txt2txt_xyz_plot_x_values textarea"},
-            scriptXYZYtype:{grad:"script_txt2txt_xyz_plot_y_type"},
-            scriptXYZYVals:{sel:"#script_txt2txt_xyz_plot_y_values textarea"},
-            scriptXYZZtype:{grad:"script_txt2txt_xyz_plot_z_type"},
-            scriptXYZZVals:{sel:"#script_txt2txt_xyz_plot_z_values textarea"},
-            scriptXYZDrawLeg:{sel:"#script_txt2txt_xyz_plot_draw_legend input"},
-            scriptXYZIncludeSubImg:{sel:"#script_txt2txt_xyz_plot_include_lone_images input"},
-            scriptXYZIncludeSubGrid:{sel:"#script_txt2txt_xyz_plot_include_sub_grids input"},
-            scriptXYZKeepMOne:{sel:"#script_txt2txt_xyz_plot_no_fixed_seeds input"},
-            scriptXYZGridMargin: {sel:"#script_txt2txt_xyz_plot_margin_size [id^=range_id]",sel2:"#script_txt2txt_xyz_plot_margin_size input"},
+            scriptXYZXtype:{grad:"script_txt2img_xyz_plot_x_type"},
+            scriptXYZXVals:{sel:"#script_txt2img_xyz_plot_x_values textarea"},
+            scriptXYZYtype:{grad:"script_txt2img_xyz_plot_y_type"},
+            scriptXYZYVals:{sel:"#script_txt2img_xyz_plot_y_values textarea"},
+            scriptXYZZtype:{grad:"script_txt2img_xyz_plot_z_type"},
+            scriptXYZZVals:{sel:"#script_txt2img_xyz_plot_z_values textarea"},
+            scriptXYZDrawLeg:{sel:"#script_txt2img_xyz_plot_draw_legend input"},
+            scriptXYZIncludeSubImg:{sel:"#script_txt2img_xyz_plot_include_lone_images input"},
+            scriptXYZIncludeSubGrid:{sel:"#script_txt2img_xyz_plot_include_sub_grids input"},
+            scriptXYZKeepMOne:{sel:"#script_txt2img_xyz_plot_no_fixed_seeds input"},
+            scriptXYZGridMargin: {sel:"#script_txt2img_xyz_plot_margin_size [id^=range_id]",sel2:"#script_txt2img_xyz_plot_margin_size input"},
         },
         i2i:{
             controls:{
@@ -124,8 +124,8 @@
             width:  {sel:"#img2img_width [id^=range_id]",sel2:"#img2img_width input"},
             height: {sel:"#img2img_height [id^=range_id]",sel2:"#img2img_height input"},
 
-            restoreFace: {sel:"#img2img_restore_faces input"},
-            tiling: {sel:"#img2img_tiling input"},
+            restoreFace: {sel:"#img2img_settings #setting_face_restoration input"},
+            tiling: {sel:"#img2img_settings #setting_tiling input"},
 
             batchCount: {sel:"#img2img_batch_count [id^=range_id]",sel2:"#img2img_batch_count input"},
             batchSize: {sel:"#img2img_batch_size [id^=range_id]",sel2:"#img2img_batch_size input"},
@@ -1768,6 +1768,9 @@
                 try {
                     if(conf[type][prop].gradEl) {
                         valueJSON[prop] = getGradVal(conf[type][prop].gradEl);
+
+                    } else if(conf[type][prop].el.classList.contains('input-accordion')) { // "input-accordion" (checkbox alternative)
+                        valueJSON[prop] = conf[type][prop].el.classList.contains('input-accordion-open') ? true : false;
                     } else if(conf[type][prop].el.type == 'fieldset') { // Radio buttons
                         valueJSON[prop] = conf[type][prop].el.querySelector('input:checked').value;
                     } else if(conf[type][prop].el.type == 'checkbox') {
@@ -1824,6 +1827,12 @@
                         triggerOnBaseElem = false; // No need to trigger this on base element
                         conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]').checked = true;
                         triggerChange(conf[type][prop].el.querySelector('[value="' + inputJSONObject[prop] + '"]'));
+                    } else if(conf[type][prop].el.classList.contains('input-accordion')) { // "input-accordion" (checkbox alternative)
+                        let currentValue = conf[type][prop].el.classList.contains('input-accordion-open') ? true : false;
+                        if(inputJSONObject[prop] != currentValue) {
+                            conf[type][prop].el.querySelector('.label-wrap').click();
+                        }
+
                     } else if(conf[type][prop].el.type == 'select-one') { // Select
                         if(conf[type][prop].el.checked == inputJSONObject[prop]) triggerOnBaseElem = false; // Not needed
                         conf[type][prop].el.value = inputJSONObject[prop];

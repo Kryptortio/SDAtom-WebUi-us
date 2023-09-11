@@ -65,6 +65,9 @@ This text field is where you can add your own script that gets executed after th
 	```
 *Feel free to share more in the discussions tab (note that scripts has some security risks so some care should be taken when adding scripts)*
 
+# Known issues
+
+Since version 1.6.0 of [the web ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui/), restore face and tiling options are now hidden by default. This will cause the script to complain but besides those not working the rest should work fine. To restore those two options go to `Settings > User interface > Options in main UI - txt2img` there you can add them back by typing `tiling` and `face_restoration`. After adding the two of them to both txt2img and img2img save and reload the UI.
 
 # Troubleshooting
 
@@ -87,7 +90,7 @@ Steps to try to find the cause of issues
 
 # Limitations
 
-Latest commit (version of AUTOMATIC1111) confirmed to be working (1.2.0 [b08500cec8a791ef20082628b49b17df833f5dda](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/b08500cec8a791ef20082628b49b17df833f5dda))
+Latest commit (version of AUTOMATIC1111) confirmed to be working (1.6.0.2 [5ef669de080814067961f28357256e8fe27544f4](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/5ef669de080814067961f28357256e8fe27544f4))
 
 * Only txt2img, img2img and extras are supported
 * For img2img/extras loading a new image is not supported
