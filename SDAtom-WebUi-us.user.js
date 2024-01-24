@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SDAtom-WebUi-us
 // @namespace    SDAtom-WebUi-us
-// @version      1.4.0
+// @version      1.4.1
 // @description  Queue for AUTOMATIC1111 WebUi and an option to saving settings
 // @author       Kryptortio
 // @homepage     https://github.com/Kryptortio/SDAtom-WebUi-us
@@ -587,6 +587,7 @@
         container.style.width = c_innerUIWidth;
         container.style.border = "1px solid white";
         container.style.position = "relative";
+        container.style.zIndex = "2147483647";
         document.body.appendChild(container);
 
         let addToQueueButton = appendAddToQueueButton(container, 0, c_addToQueueButtonText, appendQueueItem, "Add an item to the queue according to current tab and settings");
