@@ -22,7 +22,7 @@ The script assumes you are running the web interface on the url http://127.0.0.1
 
 # Updating
 
-Hopefully the script will update autmatically but if the script doesn't have [the latest version](https://github.com/Kryptortio/SDAtom-WebUi-us/blob/main/SDAtom-WebUi-us.user.js#L4) then it can be updated manually.
+Hopefully the script will update automatically but if the script doesn't have [the latest version](https://github.com/Kryptortio/SDAtom-WebUi-us/blob/main/SDAtom-WebUi-us.user.js#L4) then it can be updated manually.
 
 1. (Extension for AUTOMATIC1111) click `Extensions` >  `Check for updates` > `Apply and restart UI`.
 
